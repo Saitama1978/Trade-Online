@@ -187,7 +187,6 @@
         .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
         .log-info p { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* CANDLE READING UI STYLES */
         .pattern-display-box {
             border: 1px solid var(--yellow-gold);
             border-radius: 8px;
@@ -205,7 +204,6 @@
         .guide-header { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; }
         .guide-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* DASHBOARD FINAL ACTION BOX */
         .big-action-box {
             border: 2px solid var(--yellow-gold);
             border-radius: 8px;
@@ -250,7 +248,6 @@
         <div class="section-title">Automated Philippine Market Matrix</div>
         
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
-            <!-- KALIWANG DROPDOWN: 20 ASSETS -->
             <div class="input-group">
                 <label>Asset (20 Trading List)</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
@@ -277,9 +274,8 @@
                 </select>
             </div>
 
-            <!-- KANANG DROPDOWN: GAYA NG SABI MO BOSS, MAGKAPARIHO NA SILA NG LISTAHAN NG ASSET! -->
             <div class="input-group">
-                <label>Strategy Mode</label>
+                <label>Strategy Selector</label>
                 <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
                     <option value="MER">MERALCO (MER)</option>
                     <option value="BDO" selected>BDO Unibank (BDO)</option>
@@ -444,7 +440,6 @@
         let liveRefreshInterval = null;
         let exportedDataDatabase = []; 
 
-        // Dashboard counters
         let totalSimulations = 0;
         let winEntries = 0;
         let loseEntries = 0;
@@ -506,23 +501,25 @@
             
             let patternName = "NO DATA FOUND";
             let biasDirection = "NONE";
-            if (isManualSnap) {
-                const randPattern = Math.random();
-                if (randPattern > 0.6) {
-                    patternName = "HAMMER DETECTED";
-                    biasDirection = "BULLISH UP";
-                } else if (randPattern > 0.3) {
-                    patternName = "SHOOTING STAR";
-                    biasDirection = "BEARISH DOWN";
-                } else {
-                    patternName = "DOJI INDECISION";
-                    biasDirection = "SIDEWAYS";
-                }
-                document.getElementById('analysis-text').innerText = `Ang market matrix ng ${symbol} sa kasalukuyan ay nagpapakita ng ${patternName}. Mataas ang tsansa ng direksyon na maging ${biasDirection}.`;
+            
+            // Auto generation patterns for continuous feed or snap
+            const randPattern = Math.random();
+            if (randPattern > 0.6) {
+                patternName = "HAMMER DETECTED";
+                biasDirection = "BULLISH UP";
+            } else if (randPattern > 0.3) {
+                patternName = "SHOOTING STAR";
+                biasDirection = "BEARISH DOWN";
+            } else {
+                patternName = "DOJI INDECISION";
+                biasDirection = "SIDEWAYS";
             }
 
-            document.getElementById('detected-pattern-name').innerText = patternName;
-            document.getElementById('market-bias-badge').innerText = biasDirection;
+            if (isManualSnap || !isManualSnap) {
+                document.getElementById('analysis-text').innerText = `Ang market matrix ng ${symbol} sa kasalukuyan ay nagpapakita ng ${patternName}. Mataas ang tsansa ng direksyon na maging ${biasDirection}.`;
+                document.getElementById('detected-pattern-name').innerText = patternName;
+                document.getElementById('market-bias-badge').innerText = biasDirection;
+            }
 
             let calculatedAction = isBearish ? "SELL" : "BUY";
             
@@ -551,20 +548,19 @@
                 pnl: totalNetProfit.toFixed(2)
             };
 
-            if(isManualSnap || exportedDataDatabase.length === 0) {
-                exportedDataDatabase.unshift(currentCandleNode);
-                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
-            }
+            exportedDataDatabase.unshift(currentCandleNode);
+            document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
 
-            if (isManualSnap) {
+            if (isManualSnap || true) {
                 document.getElementById('ai-rsi-text').innerText = isBearish ? "🎯 OVERBOUGHT REGION (Mag-abang ng matinding Sell Correction!)" : "🎯 OVERSOLD REGION (Mag-abang ng matinding Buy Reversal!)";
                 document.getElementById('ai-conviction-text').innerText = isBearish ? "⚡ SHORT CONFIRMATION ACTIVE" : "🚀 BULLISH BREAKOUT CONFIRMED";
                 document.getElementById('ai-move-text').innerText = `Execution target set at Entry Price: ₱${close}. Pair correlation locked with ${strategySymbol}.`;
                 document.getElementById('ai-confluence-text').innerText = "All technical rules matched. Strategy matrix successfully locked.";
             }
 
+            // DITO NALALAGAY AUTOMATED PUNO SA LIVE LOGS BOSS!
             const historyContainer = document.getElementById('history-container');
-            if(historyContainer && isManualSnap) {
+            if(historyContainer) {
                 const freshLogHTML = `
                     <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
                         <div class="log-info">
@@ -574,6 +570,11 @@
                     </div>
                 `;
                 historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
+                
+                // Truncate logs to avoid performance breakdown after long use (keeps last 30 rows)
+                if (historyContainer.children.length > 30) {
+                    historyContainer.removeChild(historyContainer.lastChild);
+                }
             }
         }
 
@@ -587,9 +588,8 @@
             document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
 
             const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 20 + 60) : 0;
-            const lossChance = totalSimulations > 0 ? (100 - winChance) : 0;
             document.getElementById('chance-win').innerText = `${winChance}%`;
-            document.getElementById('chance-loss').innerText = `${lossChance}%`;
+            document.getElementById('chance-loss').innerText = `${100 - winChance}%`;
 
             if (totalSimulations > 0) {
                 document.getElementById('matrix-remarks').innerText = winChance > 70 ? "HIGH PROBABILITY TRADING SETUP" : "NORMAL MARKET VOLATILITY RUNNING";
@@ -624,6 +624,7 @@
 
         function deployPSEAutomationSuite() {
             fetchLiveMarketData(false);
+            // Ang live background automation interval ay mag-i-inject na rin ng data sa logs kada 4 segundo!
             liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
