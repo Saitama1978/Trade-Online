@@ -129,17 +129,7 @@
         .status-card.red { border-left-color: var(--accent-red); }
 
         .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); }
-        .orange .card-label { color: var(--accent-orange); }
-        .green .card-label { color: var(--accent-green); }
-        .blue .card-label { color: var(--accent-blue); }
-        .teal .card-label { color: var(--accent-teal); }
-
-        .card-value { font-size: 1rem; font-weight: 500; line-height: 1.4; }
-
-        .section-title {
-            color: var(--accent-purple); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px;
-        }
-
+        
         .grid-2x2 {
             display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
         }
@@ -187,7 +177,6 @@
         <div style="width:20px;"></div>
     </header>
 
-    <!-- LIVE MONITOR BAR -->
     <div class="market-bar">
         <div>
             <span class="pulse-dot"></span>
@@ -195,11 +184,10 @@
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱395.00</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱590.00</span>
         </div>
     </div>
 
-    <!-- TABS MENU -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
@@ -212,7 +200,6 @@
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
-        <!-- DROP DOWNS GRID -->
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
             <div class="input-group">
                 <label>Asset</label>
@@ -229,16 +216,11 @@
             </div>
 
             <div class="input-group">
-                <label>Strategy</label>
-                <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);" onchange="handleControlChange()">
-                    <option value="MER">MERALCO (MER)</option>
-                    <option value="BDO" selected>BDO Unibank (BDO)</option>
-                    <option value="BPI">Bank of PI (BPI)</option>
-                    <option value="MBT">Metrobank (MBT)</option>
-                    <option value="SM">SM Investments (SM)</option>
-                    <option value="AC">Ayala Corp (AC)</option>
-                    <option value="SMPH">SM Prime (SMPH)</option>
-                    <option value="JFC">Jollibee Foods (JFC)</option>
+                <label>Strategy Mode</label>
+                <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);">
+                    <option value="SCALPING">SCALPING SHORT</option>
+                    <option value="SWING" selected>SWING LONG</option>
+                    <option value="POSITION">POSITION HOLD</option>
                 </select>
             </div>
         </div>
@@ -250,21 +232,19 @@
             <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Loading..."></div>
         </div>
 
-        <!-- FINAL ACTION DISPLAY -->
         <div class="card-label" style="text-align: center; margin-top:15px;">Final Action Result</div>
         <div id="final-action-box" style="border: 2px solid var(--accent-green); border-radius: 8px; padding: 12px; text-align: center; background-color: rgba(34, 197, 94, 0.05); margin-bottom: 10px;">
-            <h2 id="final-action-text" style="color: var(--accent-green); font-size: 1.4rem; letter-spacing: 1px;">READY TO TRADE</h2>
+            <h2 id="final-action-text" style="color: var(--accent-green); font-size: 1.4rem; letter-spacing: 1px;">READY</h2>
         </div>
 
         <div class="status-card teal" style="padding: 10px; margin-top:5px;">
             <div style="font-size:0.75rem; color:#fff; text-align:center;">
-                🤖 <strong>System Status:</strong> <span id="auto-status-text" style="color:var(--accent-purple);">Connecting...</span>
+                📊 Accumulated Array Data: <span id="saved-nodes-count" style="color:var(--yellow-gold); font-weight:bold;">0</span> rows ready to export
             </div>
         </div>
 
-        <!-- UPDATED BUTTON FOR ARRAY TXT FORMAT -->
-        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Save Matrix to TXT (Offline Trade)</button>
-        <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
+        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Export Full History to TXT</button>
+        <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
     </div>
 
     <!-- TAB 2: PLANNER AI -->
@@ -276,37 +256,29 @@
         </div>
         <div class="status-card green">
             <div class="card-label">Conviction Set</div>
-            <div id="ai-conviction-text" class="card-value">⏳ WAITING FOR BREAKOUT</div>
-        </div>
-        <div class="status-card blue">
-            <div class="card-label">Next Recommended Move</div>
-            <div id="ai-move-text" class="card-value">Processing live candle data...</div>
+            <div id="ai-conviction-text" class="card-value">⏳ SYNCING RUNS</div>
         </div>
     </div>
 
     <!-- TAB 3: CANDLE READING -->
     <div id="view-candle" class="tab-view">
-        <div class="section-title">AI Candlestick Sign & Identification Engine</div>
+        <div class="section-title">AI Candlestick Sign Engine</div>
         <div id="candle-card-color" class="status-card red">
             <div class="card-label">Detected Pattern:</div>
             <div id="detected-pattern-name" style="font-size: 1.1rem; font-weight:700; margin: 4px 0 8px 0;">ANALYZING...</div>
             <div>
-                <span style="font-size: 0.75rem; font-weight:700; color:#fff;">MARKET BIAS DIRECTION:</span>
+                <span style="font-size: 0.75rem; font-weight:700; color:#fff;">MARKET BIAS:</span>
                 <span id="market-bias-badge" class="indicator-pill pill-down">WAITING</span>
             </div>
-        </div>
-        <div class="status-card">
-            <p id="pattern-explanation" style="font-size: 0.85rem; line-height:1.5;">Naghihintay ng unang tick mula sa live Philippine market stream.</p>
         </div>
     </div>
 
     <!-- TAB 4: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
-        <div class="section-title">PSE Account Metrics Engine</div>
+        <div class="section-title">Account Metrics Engine</div>
         <div class="grid-2x2">
-            <div class="stat-card w-green"><div class="stat-label">Win Rate Accuracy</div><div id="stat-winrate" class="stat-value">71.2%</div></div>
-            <div class="stat-card w-green"><div class="stat-label">Net Profit / Loss</div><div id="stat-pnl" class="stat-value">₱18,250.00</div></div>
-            <div class="stat-card w-blue"><div class="stat-label">Total Simulations</div><div id="stat-sims" class="stat-value">142</div></div>
+            <div class="stat-card w-green"><div class="stat-label">Win Rate</div><div class="stat-value">71.2%</div></div>
+            <div class="stat-card w-green"><div class="stat-label">Net Profit</div><div class="stat-value">₱18,250.00</div></div>
         </div>
     </div>
 
@@ -320,7 +292,9 @@
 
     <script>
         let liveRefreshInterval = null;
-        let lastCalculatedData = {}; 
+        
+        // PANGHAWAK NG LAHAT NG NA-GENERATE NA DATA ROWS PARANG SA TEXT FILE MO!
+        let exportedDataDatabase = []; 
 
         const historicalMarketDatabase = {
             "MER": { base: 590.00, vol: 0.008 },
@@ -340,35 +314,9 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        function syncHistoricalTimeline(symbol) {
-            const historyContainer = document.getElementById('history-container');
-            if(!historyContainer) return;
-            historyContainer.innerHTML = ''; 
-            const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.015 };
-            
-            for (let i = 4; i > 0; i--) {
-                let timeFrame = `${i * 15}m ago`;
-                let variance = (Math.sin(i) * 0.4) * (config.base * config.vol);
-                let pastClose = (config.base + variance).toFixed(2);
-                let pastOpen = (config.base + (variance * 0.9)).toFixed(2);
-                
-                const logHTML = `
-                    <div class="log-item" style="opacity: 0.65; border-right: 3px solid var(--border-color);">
-                        <div class="log-info">
-                            <h4>${symbol} Presaved Node — ${timeFrame}</h4>
-                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${pastOpen} | C: ₱${pastClose}</p>
-                        </div>
-                        <div class="log-status" style="color:var(--text-muted); font-size: 0.65rem;">ACCURATE</div>
-                    </div>
-                `;
-                historyContainer.innerHTML += logHTML;
-            }
-        }
-
-        function fetchLiveMarketData() {
+        function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
-            const stratMode = document.getElementById('strategy-mode').value;
 
             const multiplier = (Math.random() - 0.485) * (config.base * config.vol);
             const close = (config.base + multiplier).toFixed(2);
@@ -383,17 +331,15 @@
 
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-            document.getElementById('auto-status-text').innerText = "Live automated trade matrix actively syncing...";
 
             const isBearish = parseFloat(close) < parseFloat(open);
-            // Inayon sa format mo: SELL SIGNAL o BUY SIGNAL / WAITING
             const currentAction = isBearish ? "SELL SIGNAL" : "BUY SIGNAL";
-            const generatedRSI = isBearish ? 69.47 : 33.06;
-            const generatedEMA = (parseFloat(close) * 1.01).toFixed(2);
-            const generatedSize = (Math.random() * 150 + 10).toFixed(2);
+            const generatedRSI = isBearish ? 69.47368421052632 : 33.06122448979592;
+            const generatedEMA = (parseFloat(close) * 1.01).toFixed(5);
+            const generatedSize = (Math.random() * 150 + 10).toFixed(14);
 
-            // GUMAWA NG FORMAT NA TUGMA SA ARRAY SYSTEM MO
-            lastCalculatedData = {
+            // GUMAWA NG BAGONG ROW ENTRY
+            let currentCandleNode = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 mode: "LONG",
@@ -409,95 +355,68 @@
                 size: parseFloat(generatedSize)
             };
 
+            // KAPAG NG-CLICK O KADA TICK, IDADAGDAG SA PINAKATAAS NG LISTAHAN
+            if(isManualSnap || exportedDataDatabase.length === 0 || Math.random() > 0.7) {
+                exportedDataDatabase.unshift(currentCandleNode);
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+            }
+
             processAILogic(symbol, open, high, low, close, currentAction, isBearish, generatedRSI);
         }
 
         function processAILogic(symbol, o, h, l, c, currentAction, isBearish, rsiValue) {
-            const stratMode = document.getElementById('strategy-mode').value;
-            const patternName = document.getElementById('detected-pattern-name');
-            const biasBadge = document.getElementById('market-bias-badge');
-            const explanation = document.getElementById('pattern-explanation');
-            const candleCard = document.getElementById('candle-card-color');
-
-            if (isBearish) {
-                patternName.innerText = `${symbol} ${currentAction}`;
-                patternName.style.color = "var(--accent-red)";
-                biasBadge.innerText = "BEARISH REJECTION";
-                biasBadge.className = "indicator-pill pill-down";
-                if(candleCard) candleCard.style.borderColor = "var(--accent-red)";
-                explanation.innerText = `May distribution phase sa matrix ng ${symbol}. Hayaang maubos ang supply.`;
-            } else {
-                patternName.innerText = `${symbol} ${currentAction}`;
-                patternName.style.color = "var(--accent-green)";
-                biasBadge.innerText = "BULLISH EXPANSION";
-                biasBadge.className = "indicator-pill";
-                biasBadge.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
-                biasBadge.style.color = "var(--accent-green)";
-                if(candleCard) candleCard.style.borderColor = "var(--accent-green)";
-                explanation.innerText = `Napasok ng institutional orders ang profile ng ${symbol}.`;
-            }
-
-            document.getElementById('ai-rsi-text').innerText = `RSI: ${rsiValue}`;
-            document.getElementById('ai-conviction-text').innerText = `[${stratMode}] MODE SYNC`;
-            document.getElementById('ai-move-text').innerText = `Target Zone calculated for ${symbol}.`;
-
+            document.getElementById('ai-rsi-text').innerText = `RSI: ${rsiValue.toFixed(2)}`;
             document.getElementById('final-action-text').innerText = currentAction;
             document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
             document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
 
             const historyContainer = document.getElementById('history-container');
             if(!historyContainer) return;
-            const currentTimeStr = new Date().toLocaleTimeString();
             const freshLogHTML = `
                 <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">
                     <div class="log-info">
-                        <h4>${symbol} vs ${stratMode} — ${currentTimeStr}</h4>
-                        <p style="font-size:0.7rem; color:var(--accent-purple);">O: ₱${o} | C: ₱${c}</p>
+                        <h4>${symbol} Matrix Capture</h4>
+                        <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${o} | C: ₱${c} | Act: ${currentAction}</p>
                     </div>
-                    <div class="log-status" style="color:${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">LIVE</div>
                 </div>
             `;
             historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-            if (historyContainer.children.length > 5) historyContainer.removeChild(historyContainer.lastChild);
+            if (historyContainer.children.length > 8) historyContainer.removeChild(historyContainer.lastChild);
         }
 
-        // BAGONG EXPORT: KINUKULONG SA [ ] ARRAYS KAHIT NAKA .TXT FILE SIYA
+        // EXPORT ENGINE: NGAYON BUONG ARRAY LIST NA ANG LALABAS NA TXT FILE!
         function exportMatrixToTXT() {
-            if (!lastCalculatedData.company) {
-                alert("Wait lang boss, naglo-load pa ang data.");
+            if (exportedDataDatabase.length === 0) {
+                alert("Sandali lang boss, walang laman ang listahan.");
                 return;
             }
             
-            // Ibinabalot sa array para pumasok sa database ng offline tool mo
-            let finalArrayFormat = [lastCalculatedData];
-            let txtContent = JSON.stringify(finalArrayFormat);
+            const symbol = document.getElementById('asset-selector').value;
+            // Dito json array string ang ibababa natin sa device mo para basang-basa ng code loader mo
+            let txtContent = JSON.stringify(exportedDataDatabase);
 
             const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `offline_trade_${lastCalculatedData.company}.txt`);
+            downloadAnchor.setAttribute("download", `offline_trade_${symbol}.txt`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
         function handleControlChange() {
-            const selectedSymbol = document.getElementById('asset-selector').value;
-            syncHistoricalTimeline(selectedSymbol); 
-            fetchLiveMarketData();
+            exportedDataDatabase = []; // I-clear ang list kapag lumipat ng ibang asset
+            document.getElementById('saved-nodes-count').innerText = "0";
+            fetchLiveMarketData(true);
         }
 
         function triggerManualCalculation() {
-            fetchLiveMarketData();
-            alert("Matrix manually refreshed, boss!");
+            fetchLiveMarketData(true); // Sapilitang magdagdag ng panibagong row sa bawat click ng user
         }
 
         function deployPSEAutomationSuite() {
-            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            const initialSymbol = document.getElementById('asset-selector').value;
-            syncHistoricalTimeline(initialSymbol);
-            fetchLiveMarketData();
-            liveRefreshInterval = setInterval(fetchLiveMarketData, 4000);
+            fetchLiveMarketData(true);
+            liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
         window.onload = deployPSEAutomationSuite;
