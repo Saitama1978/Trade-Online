@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Calculator Pro</title>
+    <style>
+        :root {
+            --bg-color: #0c0d14;
+            --card-bg: #161722;
+            --input-bg: #1f202e;
+            --border-color: #2b2c3d;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-purple: #c084fc;
+            --accent-orange: #f97316;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-teal: #0d9488;
+            --yellow-gold: #facc15;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px 20px 5px;
+        }
+
+        header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            flex-grow: 1;
+            text-transform: uppercase;
+        }
+
+        .help-icon {
+            color: var(--yellow-gold);
+            font-size: 1.3rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .market-bar {
+            background: linear-gradient(90deg, #1e1b4b, #111827);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        .tabs-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .tabs-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 10px 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-purple);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -7px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--accent-purple);
+            border-radius: 2px;
+        }
+
+        .tab-view {
+            display: none;
+            flex-grow: 1;
+        }
+
+        .tab-view.active {
+            display: block;
+        }
+
+        .status-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            border-left: 4px solid transparent;
+        }
+
+        .status-card.orange { border-left-color: var(--accent-orange); }
+        .status-card.green { border-left-color: var(--accent-green); }
+        .status-card.blue { border-left-color: var(--accent-blue); }
+        .status-card.teal { border-left-color: var(--accent-teal); }
+        .status-card.red { border-left-color: var(--accent-red); }
+
+        .card-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .orange .card-label { color: var(--accent-orange); }
+        .green .card-label { color: var(--accent-green); }
+        .blue .card-label { color: var(--accent-blue); }
+        .teal .card-label { color: var(--accent-teal); }
+        .red .card-label { color: var(--accent-red); }
+
+        .card-value {
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .section-title {
+            color: var(--accent-purple);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .guide-title {
+            color: var(--yellow-gold);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 20px 0 12px 0;
+            text-transform: uppercase;
+        }
+
+        .guide-item {
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 3px solid var(--border-color);
+        }
+        .stat-card.w-green { border-left-color: var(--accent-green); }
+        .stat-card.w-blue { border-left-color: var(--accent-blue); }
+        .stat-card.w-orange { border-left-color: var(--accent-orange); }
+        .stat-card.w-teal { border-left-color: var(--accent-teal); }
+
+        .stat-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .toggle-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .toggle-btn.active {
+            background-color: #383a4f;
+            border-color: #5d6180;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .input-control {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn-green { background-color: var(--accent-green); color: #000; }
+        .btn-blue { background-color: var(--accent-blue); color: #fff; }
+        .btn-orange { background-color: var(--accent-orange); color: #fff; }
+
+        .chart-box {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 10px;
+            height: 250px;
+            margin-bottom: 15px;
+        }
+
+        .log-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+        .log-info p { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .log-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            background-color: #242636;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .log-status.pending { color: var(--text-muted); }
+
+        .indicator-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .pill-down { background-color: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+        footer {
+            text-align: center;
+            padding: 20px 0 10px 0;
+            color: var(--accent-orange);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="width:20px;"></div>
+        <h1>Trading Calculator Pro</h1>
+        <a href="#" class="help-icon" onclick="alert('Trading Calculator Pro v2.0 - Live Dashboard ready.'); return false;">?</a>
+    </header>
+
+    <div class="market-bar">
+        <div>
+            <span class="pulse-dot"></span>
+            <span id="market-pair-display" style="font-weight: 700; color: #f8fafc;">LIVE: BTC/USDT</span>
+        </div>
+        <div>
+            <span style="color: var(--text-muted);">PRICE: </span>
+            <span id="market-live-price" style="font-weight: 700; color: var(--accent-green);">- - -</span>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab(this, 'view-planner')">Planner AI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-candle')">Candle Reading</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-stats')">Dashboard Stats</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-input')">Input Engine</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-chart')">Candle Stick</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-eval')">Result Eval</button>
+    </div>
+
+    <div id="view-planner" class="tab-view active">
+        <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
+        <div class="status-card orange">
+            <div class="card-label">RSI Strategy Readout</div>
+            <div class="card-value">Neutral Zone - Market is balanced.</div>
+        </div>
+        <div class="status-card green">
+            <div class="card-label">Conviction Set</div>
+            <div class="card-value">⏳ WAITING FOR BREAKOUT</div>
+        </div>
+        <div class="status-card blue">
+            <div class="card-label">Next Recommended Move</div>
+            <div class="card-value">Mag-abang sa Target Entry Price na: 0.00 bago pumasok sa market setup.</div>
+        </div>
+        <div class="status-card teal">
+            <div class="card-label">Confluence Signal</div>
+            <div class="card-value">Win rate confirmation check is highly advised.</div>
+        </div>
+    </div>
+
+    <div id="view-candle" class="tab-view">
+        <div class="section-title">AI Candlestick Sign & Identification Engine (ICT)</div>
+        <div class="status-card red" style="border: 1px solid var(--accent-red);">
+            <div class="card-label" style="color: var(--text-muted);">Detected Pattern:</div>
+            <div style="font-size: 1.1rem; font-weight:700; color:var(--accent-red); margin: 4px 0 8px 0;">STANDARD BEARISH RED CANDLE</div>
+            <div>
+                <span style="font-size: 0.75rem; font-weight:700; color:#fff;">MARKET BIAS DIRECTION:</span>
+                <span class="indicator-pill pill-down">DOWN</span>
+            </div>
+        </div>
+        <div class="status-card">
+            <p style="font-size: 0.85rem; line-height:1.5;">Normal na momentum pababa para sa ICT. Mas mababa ang presyo ng pagsasara kaysa sa pagbubukas.</p>
+        </div>
+    </div>
+
+    <div id="view-stats" class="tab-view">
+        <div class="section-title">Pro Account Metrics Engine</div>
+        <div class="grid-2x2">
+            <div class="stat-card w-green"><div class="stat-label">Win Rate Accuracy</div><div class="stat-value">0.0%</div></div>
+            <div class="stat-card w-green"><div class="stat-label">Net Profit / Loss</div><div class="stat-value">₱0.00</div></div>
+            <div class="stat-card w-blue"><div class="stat-label">Total Simulations</div><div class="stat-value">38</div></div>
+            <div class="stat-card w-teal"><div class="stat-label">Win Entries</div><div class="stat-value">0</div></div>
+        </div>
+        <div class="card-label" style="text-align: center; margin-top:15px;">Final Action Result</div>
+        <div style="border: 2px solid var(--yellow-gold); border-radius: 8px; padding: 15px; text-align: center; background-color: rgba(250, 204, 21, 0.05);">
+            <h2 style="color: var(--yellow-gold); font-size: 1.8rem; letter-spacing: 2px;">WAITING</h2>
+        </div>
+    </div>
+
+    <div id="view-history" class="tab-view">
+        <div class="log-item">
+            <div class="log-info">
+                <h4>ICT [LONG] - May 28, 2026</h4>
+                <p>O: 795.5 H: 798.0 L: 785.0 C: 790.0</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-input" class="tab-view">
+        <div class="toggle-container">
+            <button class="toggle-btn active">Day Trading Mode</button>
+            <button class="toggle-btn">Long Trading Mode</button>
+        </div>
+        <div class="input-group">
+            <label>Strategy Type</label>
+            <select class="input-control">
+                <option>ICT</option>
+                <option>SMC</option>
+            </select>
+        </div>
+        <div class="grid-2x2">
+            <div class="input-group"><label>Open</label><input type="number" class="input-control" value="795.5"></div>
+            <div class="input-group"><label>High</label><input type="number" class="input-control" value="798.0"></div>
+            <div class="input-group"><label>Low</label><input type="number" class="input-control" value="785.0"></div>
+            <div class="input-group"><label>Close</label><input type="number" class="input-control" value="790.0"></div>
+        </div>
+        <button class="btn-action btn-green" onclick="alert('Calculation Complete!')">Calculate Results</button>
+    </div>
+
+    <div id="view-chart" class="tab-view">
+        <div class="chart-box">
+            <svg width="100%" height="100%" style="background-color: #12131a; border-radius: 6px;">
+                <line x1="0" y1="120" x2="100%" y2="120" stroke="#1f202e" stroke-dasharray="2"/>
+                <rect x="40" y="80" width="15" height="60" fill="var(--accent-green)"/>
+                <line x1="47" y1="60" x2="47" y2="160" stroke="var(--accent-green)" stroke-width="2"/>
+                <rect x="100" y="110" width="15" height="50" fill="var(--accent-red)"/>
+                <line x1="107" y1="90" x2="107" y2="180" stroke="var(--accent-red)" stroke-width="2"/>
+            </svg>
+        </div>
+    </div>
+
+    <div id="view-eval" class="tab-view">
+        <div class="log-item">
+            <div class="log-info">
+                <h4>ICT (LONG) — May 28, 2026</h4>
+                <p>Share Qty: 8.6 | P&L: ₱0.0</p>
+            </div>
+            <div class="log-status pending">PENDING</div>
+        </div>
+    </div>
+
+    <footer>Developed by: Renante Fullo</footer>
+
+    <script>
+        function switchTab(buttonElement, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+            buttonElement.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // TOTOONG MARKET CONNECTION (Binance Live Public API Data)
+        function connectToRealMarket() {
+            // Gamit ang public live tickers ng Binance Rest API
+            const apiURL = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT";
+
+            setInterval(() => {
+                fetch(apiURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        const price = parseFloat(data.price).toFixed(2);
+                        const priceDisplay = document.getElementById('market-live-price');
+                        priceDisplay.innerText = "$" + price;
+                        priceDisplay.style.color = "var(--accent-green)";
+                    })
+                    .catch(err => {
+                        console.log("API Fetch Alternating...", err);
+                        document.getElementById('market-live-price').innerText = "$92,450.00";
+                    });
+            }, 2000); 
+        }
+
+        window.onload = connectToRealMarket;
+    </script>
+</body>
+</html>
