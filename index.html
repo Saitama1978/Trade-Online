@@ -191,15 +191,15 @@
     <div class="market-bar">
         <div>
             <span class="pulse-dot"></span>
-            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: BDO</span>
+            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: MER</span>
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱155.20</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱395.00</span>
         </div>
     </div>
 
-    <!-- TABS MENU (KUMPLETO AT BALIK NA) -->
+    <!-- TABS MENU -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
@@ -212,33 +212,33 @@
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
-        <!-- DROP DOWNS GRID (MAGKATABI AT PAREHAS NA PAREHAS BASE SA 1000344492.jpg) -->
+        <!-- DROP DOWNS GRID (PAREHAS NA ANG LISTAHAN NG ASSET AT STRATEGY BASE SA REKWEST MO) -->
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
             <div class="input-group">
                 <label>Asset</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
-                    <optgroup label="⚡ UTILITIES / ENERGY">
-                        <option value="MER" selected>MERALCO (MER)</option>
-                    </optgroup>
-                    <optgroup label="🏦 FINANCE / MGA BANGKO">
-                        <option value="BDO">BDO Unibank (BDO)</option>
-                        <option value="BPI">Bank of PI (BPI)</option>
-                        <option value="MBT">Metrobank (MBT)</option>
-                    </optgroup>
-                    <optgroup label="🏢 CONGLOMERATES / PROPERTY">
-                        <option value="SM">SM Investments (SM)</option>
-                        <option value="AC">Ayala Corp (AC)</option>
-                        <option value="SMPH">SM Prime (SMPH)</option>
-                        <option value="JFC">Jollibee Foods (JFC)</option>
-                    </optgroup>
+                    <option value="MER" selected>MERALCO (MER)</option>
+                    <option value="BDO">BDO Unibank (BDO)</option>
+                    <option value="BPI">Bank of PI (BPI)</option>
+                    <option value="MBT">Metrobank (MBT)</option>
+                    <option value="SM">SM Investments (SM)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
+                    <option value="JFC">Jollibee Foods (JFC)</option>
                 </select>
             </div>
 
             <div class="input-group">
                 <label>Strategy</label>
                 <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);" onchange="handleControlChange()">
-                    <option value="SMC" selected>SMC</option>
-                    <option value="ICT">ICT</option>
+                    <option value="MER">MERALCO (MER)</option>
+                    <option value="BDO" selected>BDO Unibank (BDO)</option>
+                    <option value="BPI">Bank of PI (BPI)</option>
+                    <option value="MBT">Metrobank (MBT)</option>
+                    <option value="SM">SM Investments (SM)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
+                    <option value="JFC">Jollibee Foods (JFC)</option>
                 </select>
             </div>
         </div>
@@ -250,7 +250,7 @@
             <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Loading..."></div>
         </div>
 
-        <!-- FINAL ACTION DISPLE FIX SA BABA NG INPUTS -->
+        <!-- FINAL ACTION DISPLAY -->
         <div class="card-label" style="text-align: center; margin-top:15px;">Final Action Result</div>
         <div id="final-action-box" style="border: 2px solid var(--accent-green); border-radius: 8px; padding: 12px; text-align: center; background-color: rgba(34, 197, 94, 0.05); margin-bottom: 10px;">
             <h2 id="final-action-text" style="color: var(--accent-green); font-size: 1.4rem; letter-spacing: 1px;">READY TO TRADE</h2>
@@ -262,7 +262,7 @@
             </div>
         </div>
 
-        <!-- TEXT BUTTON PARA MAG-SAVE AT MA-DOWNLOAD SA OFFLINE TRADE SYSTEM -->
+        <!-- SAVE BUTTONS -->
         <button class="btn-action btn-blue" onclick="exportMatrixToJSON()">💾 Save Matrix to JSON (Offline Trade)</button>
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
     </div>
@@ -322,7 +322,7 @@
 
     <script>
         let liveRefreshInterval = null;
-        let lastCalculatedData = {}; // Lagayan ng pinakahuling log para ma-save sa text button
+        let lastCalculatedData = {}; 
 
         const historicalMarketDatabase = {
             "MER": { base: 395.00, vol: 0.008 },
@@ -390,7 +390,7 @@
             const isBearish = parseFloat(close) < parseFloat(open);
             const currentAction = isBearish ? "HOLD / MONITOR" : "CONFIRMED MARKET BUY";
 
-            // I-store ang trade info para sa text button file saving[span_3](start_span)[span_3](end_span)
+            // Nilagay na rin ang Strategy dynamic asset name para sa offline json file mo
             lastCalculatedData = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-GB'),
@@ -421,7 +421,7 @@
                 biasBadge.innerText = "BEARISH REJECTION";
                 biasBadge.className = "indicator-pill pill-down";
                 if(candleCard) candleCard.style.borderColor = "var(--accent-red)";
-                explanation.innerText = `May distribution phase ang ${symbol} base sa ${stratMode}. Hayaang maubos ang supply.`;
+                explanation.innerText = `May distribution phase sa matrix ng ${symbol}. Hayaang maubos ang supply.`;
             } else {
                 patternName.innerText = `${stratMode} BULK DISPLACEMENT`;
                 patternName.style.color = "var(--accent-green)";
@@ -430,14 +430,13 @@
                 biasBadge.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
                 biasBadge.style.color = "var(--accent-green)";
                 if(candleCard) candleCard.style.borderColor = "var(--accent-green)";
-                explanation.innerText = `Napasok ng institutional orders ang ${symbol} gamit ang ${stratMode}.`;
+                explanation.innerText = `Napasok ng institutional orders ang profile ng ${symbol}.`;
             }
 
             document.getElementById('ai-rsi-text').innerText = isBearish ? `RSI: 39.40` : `RSI: 61.80`;
-            document.getElementById('ai-conviction-text').innerText = `[${stratMode}] CONNECTED`;
+            document.getElementById('ai-conviction-text').innerText = `[${stratMode}] MODE SYNC`;
             document.getElementById('ai-move-text').innerText = `Target Zone calculated for ${symbol}.`;
 
-            // I-update ang Final Action Box sa Input Tab
             document.getElementById('final-action-text').innerText = currentAction;
             document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
             document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
@@ -448,7 +447,7 @@
             const freshLogHTML = `
                 <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">
                     <div class="log-info">
-                        <h4>${symbol} [${stratMode}] — ${currentTimeStr}</h4>
+                        <h4>${symbol} vs ${stratMode} — ${currentTimeStr}</h4>
                         <p style="font-size:0.7rem; color:var(--accent-purple);">O: ₱${o} | C: ₱${c}</p>
                     </div>
                     <div class="log-status" style="color:${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">LIVE</div>
@@ -458,13 +457,11 @@
             if (historyContainer.children.length > 5) historyContainer.removeChild(historyContainer.lastChild);
         }
 
-        // TEXT BUTTON LOGIC: Nag-e-export ng JSON file para ma-load sa offline trade mo[span_4](start_span)[span_4](end_span)
         function exportMatrixToJSON() {
             if (!lastCalculatedData.company) {
-                alert("Wait lang boss, naglo-load pa ang matrix data.");
+                alert("Wait lang boss, naglo-load pa ang data.");
                 return;
             }
-            // Ibinalot sa isang array para kaparehas sa structure ng data mo[span_5](start_span)[span_5](end_span)
             const dataToSave = [lastCalculatedData];
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave, null, 2));
             const downloadAnchor = document.createElement('a');
