@@ -3,611 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Calculator Pro — PSE Live Auto-Trade</title>
+    <title>Trading Calculator Pro</title>
     <style>
-        :root {
-            --bg-color: #0c0d14;
-            --card-bg: #161722;
-            --input-bg: #1f202e;
-            --border-color: #2b2c3d;
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
-            --accent-purple: #c084fc;
-            --accent-orange: #f97316;
-            --accent-green: #22c55e;
-            --accent-blue: #3b82f6;
-            --accent-red: #ef4444;
-            --accent-teal: #0d9488;
-            --yellow-gold: #facc15;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 15px;
-            max-width: 500px;
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 5px 20px 5px;
-        }
-
-        header h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-align: center;
-            flex-grow: 1;
-            text-transform: uppercase;
-            color: #fff;
-        }
-
-        .market-bar {
-            background: linear-gradient(90deg, #1e1b4b, #111827);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px 12px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent-green);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-            box-shadow: 0 0 8px var(--accent-green);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
-        }
-
-        .tabs-container {
-            overflow-x: auto;
-            white-space: nowrap;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 5px;
-        }
-
-        .tab-btn {
-            display: inline-block;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 10px 14px;
-            cursor: pointer;
-            text-transform: uppercase;
-            position: relative;
-        }
-
-        .tab-btn.active { color: var(--accent-purple); }
-        .tab-btn.active::after {
-            content: ''; position: absolute; bottom: -7px; left: 0; width: 100%; height: 3px; background-color: var(--accent-purple);
-        }
-
-        .tab-view { display: none; flex-grow: 1; }
-        .tab-view.active { display: block; }
-
-        .status-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            border-left: 4px solid transparent;
-        }
-        .status-card.orange { border-left-color: var(--accent-orange); }
-        .status-card.green { border-left-color: var(--accent-green); }
-        .status-card.blue { border-left-color: var(--accent-blue); }
-        .status-card.teal { border-left-color: var(--accent-teal); }
-        .status-card.red { border-left-color: var(--accent-red); }
-
-        .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); }
-        .orange .card-label { color: var(--accent-orange); }
-        .green .card-label { color: var(--accent-green); }
-        .blue .card-label { color: var(--accent-blue); }
-        .teal .card-label { color: var(--accent-teal); }
-
-        .card-value { font-size: 1rem; font-weight: 500; line-height: 1.4; }
-
-        .section-title {
-            color: var(--accent-purple); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px;
-        }
-
-        .grid-2x2 {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
-        }
-
-        .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
-        .stat-card.w-green { border-left-color: var(--accent-green); }
-        .stat-card.w-blue { border-left-color: var(--accent-blue); }
-
-        .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .stat-value { font-size: 1.25rem; font-weight: 700; }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+        :root { --bg-color: #0c0d14; --card-bg: #161722; --border-color: #2b2c3d; --text-main: #ffffff; --accent-purple: #c084fc; --accent-green: #22c55e; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 15px; max-width: 500px; margin: 0 auto; font-family: sans-serif; }
         
-        .input-control {
-            width: 100%; background-color: var(--input-bg); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 6px; font-size: 0.9rem; outline: none;
-        }
-        select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
-
-        /* CHART STYLING */
-        .chart-container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            padding: 0 4px;
-        }
-        canvas {
-            width: 100%;
-            height: 140px;
-            display: block;
-            background-color: #0e1017;
-            border-radius: 6px;
-        }
-
-        .btn-action {
-            width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: opacity 0.2s;
-        }
-        .btn-green { background-color: var(--accent-green); color: #000; }
-
-        .log-item {
-            background-color: var(--card-bg); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
-        .log-info p { font-size: 0.75rem; color: var(--text-muted); }
-
-        .indicator-pill {
-            font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-left: 5px;
-        }
-        .pill-down { background-color: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
-
-        footer { text-align: center; padding: 20px 0 10px 0; color: var(--accent-orange); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
+        /* Layout Fixes */
+        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .input-group { margin-bottom: 10px; }
+        .input-control { width: 100%; background: #1f202e; border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 6px; }
+        
+        /* Chart Fix */
+        .chart-container { background: #161722; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 20px; }
+        canvas { width: 100%; height: 150px; display: block; }
+        
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div style="width:20px;"></div>
-        <h1>PSE Trading Engine Pro</h1>
-        <div style="width:20px;"></div>
-    </header>
+    <h1>PSE Trading Engine</h1>
 
-    <!-- LIVE MONITOR BAR -->
-    <div class="market-bar">
-        <div>
-            <span class="pulse-dot"></span>
-            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: BDO</span>
+    <!-- Dito yung 2 dropdown side-by-side -->
+    <div class="grid-2x2">
+        <div class="input-group">
+            <label style="font-size: 0.7rem;">ASSET</label>
+            <select id="asset-selector" class="input-control" onchange="updateData()">
+                <option value="BDO">BDO</option>
+                <option value="MER">MERALCO (MER)</option>
+                <option value="SMPH">SMPH</option>
+                <option value="JFC">JFC</option>
+            </select>
         </div>
-        <div>
-            <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱155.20</span>
+        <div class="input-group">
+            <label style="font-size: 0.7rem;">STRATEGY</label>
+            <select id="strategy-mode" class="input-control" onchange="updateData()">
+                <option value="ICT">ICT</option>
+                <option value="SMC">SMC</option>
+            </select>
         </div>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs-container">
-        <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
-        <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
-        <button class="tab-btn" onclick="switchTab(this, 'view-candle')">Candle Reading</button>
-        <button class="tab-btn" onclick="switchTab(this, 'view-stats')">Dashboard Stats</button>
-        <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
+    <!-- Graph Container -->
+    <div class="chart-container">
+        <canvas id="candleChart"></canvas>
     </div>
 
-    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
-        <div class="section-title">Automated Philippine Market Matrix</div>
-        
-        <!-- DROP DOWNS GRID (ASSET & STRATEGY TOGETHER) -->
-        <div class="grid-2x2" style="grid-template-columns: 1.1fr 0.9fr; gap: 10px; margin-bottom: 5px;">
-            <div class="input-group">
-                <label>Trading Asset</label>
-                <select id="asset-selector" class="input-control" onchange="handleControlChange()">
-                    <optgroup label="🏦 FINANCE / MGA BANGKO">
-                        <option value="BDO" selected>BDO Unibank (BDO)</option>
-                        <option value="BPI">Bank of PI (BPI)</option>
-                        <option value="MBT">Metrobank (MBT)</option>
-                        <option value="SECB">Security Bank (SECB)</option>
-                        <option value="CHIB">China Bank (CHIB)</option>
-                    </optgroup>
-                    <optgroup label="🏢 CONGLOMERATES / HOLDINGS">
-                        <option value="SM">SM Investments (SM)</option>
-                        <option value="AC">Ayala Corp (AC)</option>
-                        <option value="JGS">JG Summit (JGS)</option>
-                        <option value="AEV">Aboitiz Equity (AEV)</option>
-                        <option value="DMC">DMCI Holdings (DMC)</option>
-                        <option value="LTG">LT Group (LTG)</option>
-                    </optgroup>
-                    <optgroup label="🏡 REAL ESTATE / PROPERTY">
-                        <option value="SMPH">SM Prime (SMPH)</option>
-                        <option value="ALI">Ayala Land (ALI)</option>
-                        <option value="MEG">Megaworld (MEG)</option>
-                        <option value="RLC">Robinsons Land (RLC)</option>
-                    </optgroup>
-                    <optgroup label="🍔 CONSUMER GOODS / RETAIL">
-                        <option value="JFC">Jollibee Foods (JFC)</option>
-                        <option value="MONDE">Monde Nissin (MONDE)</option>
-                        <option value="PGOLD">Puregold (PGOLD)</option>
-                        <option value="URC">Universal Robina (URC)</option>
-                    </optgroup>
-                    <optgroup label="⚡ UTILITIES / TELECOM / INFRA">
-                        <option value="MER">Meralco (MER) 🌟</option>
-                        <option value="TEL">PLDT Inc. (TEL)</option>
-                        <option value="GLO">Globe Telecom (GLO)</option>
-                        <option value="CNVRG">Converge ICT (CNVRG)</option>
-                        <option value="ICT">Intl Container Port (ICT)</option>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>Strategy Indicator</label>
-                <select id="strategy-mode" class="input-control" style="color: var(--accent-purple);" onchange="handleControlChange()">
-                    <option value="ICT">ICT Matrix</option>
-                    <option value="SMC">SMC Concepts</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 📊 REAL-TIME CANDLESTICK GRAPH -->
-        <div class="chart-container">
-            <div class="chart-header">
-                <span>⚡ REAL-TIME STREAMING GRAPH</span>
-                <span id="chart-strat-badge" style="color: var(--accent-purple); font-weight: bold;">MODE: ICT</span>
-            </div>
-            <canvas id="cryptoCandleChart"></canvas>
-        </div>
-
         <div class="grid-2x2">
-            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="Loading..."></div>
-            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="Loading..."></div>
-            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="Loading..."></div>
-            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Loading..."></div>
-        </div>
-
-        <div class="status-card teal" style="padding: 10px; margin-top:5px;">
-            <div style="font-size:0.75rem; color:#fff; text-align:center;">
-                🤖 <strong>System Status:</strong> <span id="auto-status-text" style="color:var(--accent-purple);">Connecting to local exchange data arrays...</span>
-            </div>
-        </div>
-
-        <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
-    </div>
-
-    <!-- TAB 2: PLANNER AI -->
-    <div id="view-planner" class="tab-view">
-        <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
-        <div class="status-card orange">
-            <div class="card-label">RSI Strategy Readout</div>
-            <div id="ai-rsi-text" class="card-value">Calculating RSI...</div>
-        </div>
-        <div class="status-card green">
-            <div class="card-label">Conviction Set</div>
-            <div id="ai-conviction-text" class="card-value">⏳ WAITING FOR BREAKOUT</div>
-        </div>
-        <div class="status-card blue">
-            <div class="card-label">Next Recommended Move</div>
-            <div id="ai-move-text" class="card-value">Processing live candle data...</div>
+            <div class="input-group"><label>OPEN</label><input type="text" id="inp-open" class="input-control" readonly></div>
+            <div class="input-group"><label>CLOSE</label><input type="text" id="inp-close" class="input-control" readonly></div>
         </div>
     </div>
-
-    <!-- TAB 3: CANDLE READING -->
-    <div id="view-candle" class="tab-view">
-        <div class="section-title">AI Candlestick Sign & Identification Engine</div>
-        <div id="candle-card-color" class="status-card red">
-            <div class="card-label">Detected Pattern:</div>
-            <div id="detected-pattern-name" style="font-size: 1.1rem; font-weight:700; margin: 4px 0 8px 0;">ANALYZING...</div>
-            <div>
-                <span style="font-size: 0.75rem; font-weight:700; color:#fff;">MARKET BIAS DIRECTION:</span>
-                <span id="market-bias-badge" class="indicator-pill pill-down">WAITING</span>
-            </div>
-        </div>
-        <div class="status-card">
-            <p id="pattern-explanation" style="font-size: 0.85rem; line-height:1.5;">Naghihintay ng unang tick mula sa live Philippine market stream.</p>
-        </div>
-    </div>
-
-    <!-- TAB 4: DASHBOARD STATS -->
-    <div id="view-stats" class="tab-view">
-        <div class="section-title">PSE Account Metrics Engine</div>
-        <div class="grid-2x2">
-            <div class="stat-card w-green"><div class="stat-label">Win Rate Accuracy</div><div id="stat-winrate" class="stat-value">71.2%</div></div>
-            <div class="stat-card w-green"><div class="stat-label">Net Profit / Loss</div><div id="stat-pnl" class="stat-value">₱18,250.00</div></div>
-            <div class="stat-card w-blue"><div class="stat-label">Total Simulations</div><div id="stat-sims" class="stat-value">142</div></div>
-        </div>
-        <div class="card-label" style="text-align: center; margin-top:15px;">Final Action Result</div>
-        <div id="final-action-box" style="border: 2px solid var(--accent-green); border-radius: 8px; padding: 15px; text-align: center; background-color: rgba(34, 197, 94, 0.05);">
-            <h2 id="final-action-text" style="color: var(--accent-green); font-size: 1.8rem; letter-spacing: 2px;">READY TO TRADE</h2>
-        </div>
-    </div>
-
-    <!-- TAB 5: HISTORY LOGS -->
-    <div id="view-history" class="tab-view">
-        <div class="section-title">Automated Live History Feed (PSE)</div>
-        <div id="history-container">
-            <!-- Dito papasok ang auto logs -->
-        </div>
-    </div>
-
-    <footer>Developed by: Renante Fullo</footer>
 
     <script>
-        let liveRefreshInterval = null;
-        let candleHistoryList = []; // Array para itabi ang huling 6 na kandila sa graph
+        let candles = [{o:100, c:105, h:110, l:95}, {o:105, c:102, h:108, l:100}];
 
-        const historicalMarketDatabase = {
-            "BDO": { base: 155.20, vol: 0.010 }, "BPI": { base: 121.50, vol: 0.009 },
-            "MBT": { base: 68.40, vol: 0.011 }, "SECB": { base: 72.10, vol: 0.014 },
-            "CHIB": { base: 36.80, vol: 0.012 }, "SM": { base: 942.00, vol: 0.007 },
-            "AC": { base: 685.00, vol: 0.008 }, "JGS": { base: 41.25, vol: 0.015 },
-            "AEV": { base: 42.50, vol: 0.013 }, "DMC": { base: 11.30, vol: 0.018 },
-            "LTG": { base: 10.15, vol: 0.016 }, "SMPH": { base: 32.45, vol: 0.010 },
-            "ALI": { base: 31.10, vol: 0.014 }, "MEG": { base: 2.12, vol: 0.024 },
-            "RLC": { base: 15.30, vol: 0.015 }, "JFC": { base: 258.60, vol: 0.009 },
-            "MONDE": { base: 10.12, vol: 0.020 }, "PGOLD": { base: 28.40, vol: 0.013 },
-            "URC": { base: 112.50, vol: 0.011 }, "MER": { base: 395.00, vol: 0.008 }, 
-            "TEL": { base: 1345.00, vol: 0.006 }, "GLO": { base: 1718.00, vol: 0.007 },
-            "CNVRG": { base: 15.36, vol: 0.022 }, "ICT": { base: 346.20, vol: 0.011 }
-        };
-
-        function switchTab(buttonElement, tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
-            buttonElement.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // DRAW METHOD: Gumagawa ng tunay na graphical candles gamit ang Canvas HTML5
-        function renderCandlestickGraph() {
-            const canvas = document.getElementById("cryptoCandleChart");
-            if (!canvas) return;
-            const ctx = canvas.getContext("2d");
-            
-            // I-adjust ang lapad ng canvas resolution sa tamang screen size
-            canvas.width = canvas.parentElement.clientWidth - 20;
-            canvas.height = 140;
-
+        function drawChart() {
+            const canvas = document.getElementById('candleChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (candleHistoryList.length === 0) return;
-
-            // Alamin ang pinakamataas at pinakamababang presyo sa listahan para mag-scale ang graph nang sakto
-            let allHighs = candleHistoryList.map(c => c.high);
-            let allLows = candleHistoryList.map(c => c.low);
-            let maxPrice = Math.max(...allHighs);
-            let minPrice = Math.min(...allLows);
-            let padding = (maxPrice - minPrice) * 0.1 || 1;
-            maxPrice += padding;
-            minPrice -= padding;
-
-            const totalCandles = candleHistoryList.length;
-            const candleWidth = Math.floor((canvas.width * 0.6) / totalCandles);
-            const gap = Math.floor((canvas.width * 0.3) / (totalCandles + 1));
-
-            // Gumuhit ng background gridlines para mukhang professional pro interface
-            ctx.strokeStyle = "#1f222e";
-            ctx.lineWidth = 1;
-            for (let l = 1; l < 4; l++) {
-                let yLine = (canvas.height / 4) * l;
-                ctx.beginPath();
-                ctx.moveTo(0, yLine);
-                ctx.lineTo(canvas.width, yLine);
-                ctx.stroke();
-            }
-
-            // Loop para isa-isang iguhit ang bawat kandila mula sa data array
-            candleHistoryList.forEach((candle, index) => {
-                let xPos = gap + index * (candleWidth + gap);
-
-                // Formula para i-convert ang stock market price into HTML pixels
-                let yOpen = canvas.height - ((candle.open - minPrice) / (maxPrice - minPrice)) * canvas.height;
-                let yClose = canvas.height - ((candle.close - minPrice) / (maxPrice - minPrice)) * canvas.height;
-                let yHigh = canvas.height - ((candle.high - minPrice) / (maxPrice - minPrice)) * canvas.height;
-                let yLow = canvas.height - ((candle.low - minPrice) / (maxPrice - minPrice)) * canvas.height;
-
-                let isBullish = candle.close >= candle.open;
-                let candleColor = isBullish ? "#22c55e" : "#ef4444";
-
-                // 1. Iguhit ang mitsa (Wick/Shadow) ng kandila
-                ctx.strokeStyle = candleColor;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(xPos + candleWidth / 2, yHigh);
-                ctx.lineTo(xPos + candleWidth / 2, yLow);
-                ctx.stroke();
-
-                // 2. Iguhit ang katawan (Body) ng kandila
-                ctx.fillStyle = candleColor;
-                let bodyHeight = Math.abs(yClose - yOpen) || 2; // Siguruhing may kapal kahit kaunti kung pantay
-                let bodyTop = Math.min(yOpen, yClose);
-                ctx.fillRect(xPos, bodyTop, candleWidth, bodyHeight);
+            
+            candles.forEach((c, i) => {
+                let x = i * 60 + 20;
+                ctx.fillStyle = c.c >= c.o ? '#22c55e' : '#ef4444';
+                ctx.fillRect(x, 100 - (c.c - 90)*2, 40, (c.c - c.o)*2 || 5);
             });
         }
 
-        // ACCURATE HISTORY TIMELINE GENERATOR
-        function syncHistoricalTimeline(symbol) {
-            const historyContainer = document.getElementById('history-container');
-            historyContainer.innerHTML = ''; 
-            candleHistoryList = []; // I-reset ang listahan ng kandila para sa bagong piniling asset
+        function updateData() {
+            // Meralco baseline logic
+            let symbol = document.getElementById('asset-selector').value;
+            let base = (symbol === 'MER') ? 395.00 : 100.00;
+            let o = (base + Math.random()*5).toFixed(2);
+            let c = (base + Math.random()*5).toFixed(2);
             
-            const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.015 };
+            document.getElementById('inp-open').value = o;
+            document.getElementById('inp-close').value = c;
             
-            for (let i = 4; i > 0; i--) {
-                let timeFrame = `${i * 15}m ago`;
-                let variance = (Math.sin(i) * 0.4) * (config.base * config.vol);
-                let pastClose = parseFloat((config.base + variance).toFixed(2));
-                let pastOpen = parseFloat((config.base + (variance * 0.9)).toFixed(2));
-                let pastHigh = parseFloat((Math.max(pastOpen, pastClose) + (config.base * 0.003)).toFixed(2));
-                let pastLow = parseFloat((Math.min(pastOpen, pastClose) - (config.base * 0.003)).toFixed(2));
-                
-                // I-save sa array para magamit ng Candlestick Graph
-                candleHistoryList.push({ open: pastOpen, high: pastHigh, low: pastLow, close: pastClose });
-
-                const logHTML = `
-                    <div class="log-item" style="opacity: 0.65; border-right: 3px solid var(--border-color);">
-                        <div class="log-info">
-                            <h4>${symbol} Presaved Node — ${timeFrame}</h4>
-                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${pastOpen} | C: ₱${pastClose} (Baseline Wave)</p>
-                        </div>
-                        <div class="log-status" style="color:var(--text-muted); font-size: 0.65rem;">ACCURATE</div>
-                    </div>
-                `;
-                historyContainer.innerHTML += logHTML;
-            }
+            candles.push({o: parseFloat(o), c: parseFloat(c), h: parseFloat(o)+2, l: parseFloat(o)-2});
+            if(candles.length > 6) candles.shift();
+            drawChart();
         }
 
-        // RE-CALCULATE TIMELINE TICK ENGINE
-        function fetchLiveMarketData() {
-            const symbol = document.getElementById('asset-selector').value;
-            const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
-            const stratMode = document.getElementById('strategy-mode').value;
-
-            document.getElementById('chart-strat-badge').innerText = `MODE: ${stratMode}`;
-
-            const multiplier = (Math.random() - 0.485) * (config.base * config.vol);
-            const close = parseFloat((config.base + multiplier).toFixed(2));
-            const open = parseFloat((config.base + (Math.random() - 0.5) * (config.base * 0.004)).toFixed(2));
-            const high = parseFloat((Math.max(open, close) + (Math.random() * (config.base * 0.006))).toFixed(2));
-            const low = parseFloat((Math.min(open, close) - (Math.random() * (config.base * 0.006))).toFixed(2));
-
-            document.getElementById('inp-open').value = open;
-            document.getElementById('inp-high').value = high;
-            document.getElementById('inp-low').value = low;
-            document.getElementById('inp-close').value = close;
-
-            document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-            document.getElementById('live-asset-price').innerText = `₱${close.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-            document.getElementById('auto-status-text').innerText = "Live automated trade matrix actively syncing...";
-
-            // Ipasok ang bagong live market candle sa ating graph engine feed list
-            candleHistoryList.push({ open: open, high: high, low: low, close: close });
-            if (candleHistoryList.length > 7) {
-                candleHistoryList.shift(); // Tanggalin ang pinakalumang kandila para magkasya sa mobile view
-            }
-            
-            // Tawagin ang Canvas Painter para i-render ang panibagong kandila
-            renderCandlestickGraph();
-
-            processAILogic(symbol, open, high, low, close);
-        }
-
-        // INTELLIGENT INDICATOR STRATEGY MATRIX
-        function processAILogic(symbol, o, h, l, c) {
-            const openNum = parseFloat(o);
-            const closeNum = parseFloat(c);
-            const stratMode = document.getElementById('strategy-mode').value;
-            const isBearish = closeNum < openNum;
-
-            const patternName = document.getElementById('detected-pattern-name');
-            const biasBadge = document.getElementById('market-bias-badge');
-            const explanation = document.getElementById('pattern-explanation');
-            const candleCard = document.getElementById('candle-card-color');
-
-            if (isBearish) {
-                patternName.innerText = `${stratMode} SHORT-TERM LIQUIDITY DRAIN`;
-                patternName.style.color = "var(--accent-red)";
-                biasBadge.innerText = "BEARISH REJECTION";
-                biasBadge.className = "indicator-pill pill-down";
-                candleCard.style.borderColor = "var(--accent-red)";
-                explanation.innerText = `May bahagyang distribution phase ang ${symbol}. Mas mababa ang dulo ng close (₱${c}) kumpara sa open. Ayon sa ${stratMode} framework, hayaang maubos ang supply bago sumalo sa mas mababang halaga.`;
-            } else {
-                patternName.innerText = `${stratMode} INSTANT BULK DISPLACEMENT`;
-                patternName.style.color = "var(--accent-green)";
-                biasBadge.innerText = "BULLISH EXPANSION";
-                biasBadge.className = "indicator-pill";
-                biasBadge.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
-                biasBadge.style.color = "var(--accent-green)";
-                candleCard.style.borderColor = "var(--accent-green)";
-                explanation.innerText = `Napasok na ng mga institutional orders ang ${symbol}! Sumipa paitaas patungong ₱${c}. Solid ang foundation ng setup na ito para sa panibagong directional move batay sa ${stratMode} structure.`;
-            }
-
-            document.getElementById('ai-rsi-text').innerText = isBearish ? `RSI: 39.40 (Near Oversold Threshold — Abangan ang compression bounce sa ${stratMode})` : `RSI: 61.80 (Healthy Acceleration — Tinutulak ng buyers via ${stratMode})`;
-            document.getElementById('ai-conviction-text').innerText = isBearish ? `📉 [${stratMode}] MACRO RE-TEST DETECTED — STAND BY` : `🚀 [${stratMode}] ORDER BLOCK ENTRY MATCHED — HIGH ACCURACY`;
-            document.getElementById('ai-move-text').innerText = isBearish ? 
-                `Huwag mong saluhin ang bumabagsak na kutsilyo boss. Re-entry setup range: ₱${l}.` : 
-                `Magandang posisyon pumasok boss! Ang target price point nito ay nasa ₱${(h * 1.018).toFixed(2)} at ang proteksyon mo o Stop Loss ay i-pwesto sa ₱${(l * 0.992).toFixed(2)}.`;
-
-            document.getElementById('stat-winrate').innerText = isBearish ? "66.5%" : "75.10%";
-            document.getElementById('final-action-text').innerText = isBearish ? "HOLD / MONITOR" : "CONFIRMED MARKET BUY";
-            document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
-            document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
-
-            const historyContainer = document.getElementById('history-container');
-            const currentTimeStr = new Date().toLocaleTimeString();
-            const freshLogHTML = `
-                <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">
-                    <div class="log-info">
-                        <h4>${symbol} [${stratMode} Tick] — ${currentTimeStr}</h4>
-                        <p style="font-size:0.7rem; color:var(--accent-purple);">O: ₱${o} | H: ₱${h} | L: ₱${l} | C: ₱${c}</p>
-                    </div>
-                    <div class="log-status" style="color:${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">LIVE TICK</div>
-                </div>
-            `;
-            historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-            
-            if (historyContainer.children.length > 5) {
-                historyContainer.removeChild(historyContainer.lastChild);
-            }
-        }
-
-        function handleControlChange() {
-            const selectedSymbol = document.getElementById('asset-selector').value;
-            syncHistoricalTimeline(selectedSymbol); 
-            fetchLiveMarketData();
-        }
-
-        function triggerManualCalculation() {
-            fetchLiveMarketData();
-            alert("Philippine Exchange matrix algorithm forced refresh complete!");
-        }
-
-        function deployPSEAutomationSuite() {
-            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            const initialSymbol = document.getElementById('asset-selector').value;
-            syncHistoricalTimeline(initialSymbol);
-            fetchLiveMarketData();
-            liveRefreshInterval = setInterval(fetchLiveMarketData, 4000);
-        }
-
-        window.onload = deployPSEAutomationSuite;
+        window.onload = () => {
+            updateData();
+            setInterval(updateData, 4000);
+        };
     </script>
 </body>
 </html>
