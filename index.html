@@ -159,6 +159,31 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
+        /* CHART STYLING */
+        .chart-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            padding: 0 4px;
+        }
+        canvas {
+            width: 100%;
+            height: 140px;
+            display: block;
+            background-color: #0e1017;
+            border-radius: 6px;
+        }
+
         .btn-action {
             width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: opacity 0.2s;
         }
@@ -186,6 +211,7 @@
         <div style="width:20px;"></div>
     </header>
 
+    <!-- LIVE MONITOR BAR -->
     <div class="market-bar">
         <div>
             <span class="pulse-dot"></span>
@@ -197,6 +223,7 @@
         </div>
     </div>
 
+    <!-- TABS -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
@@ -205,54 +232,68 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
+    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
-        <div class="input-group">
-            <label>Pumili ng Trading Asset (22 Live Options)</label>
-            <select id="asset-selector" class="input-control" onchange="handleAssetChange()">
-                <optgroup label="🏦 FINANCE / MGA BANGKO">
-                    <option value="BDO" selected>BDO Unibank, Inc. (BDO)</option>
-                    <option value="BPI">Bank of the Philippine Islands (BPI)</option>
-                    <option value="MBT">Metropolitan Bank & Trust (MBT)</option>
-                    <option value="SECB">Security Bank Corporation (SECB)</option>
-                    <option value="CHIB">China Banking Corporation (CHIB)</option>
-                </optgroup>
-                <optgroup label="🏢 CONGLOMERATES / HOLDINGS">
-                    <option value="SM">SM Investments Corporation (SM)</option>
-                    <option value="AC">Ayala Corporation (AC)</option>
-                    <option value="JGS">JG Summit Holdings, Inc. (JGS)</option>
-                    <option value="AEV">Aboitiz Equity Ventures (AEV)</option>
-                    <option value="DMC">DMCI Holdings, Inc. (DMC)</option>
-                    <option value="LTG">LT Group, Inc. (LTG)</option>
-                </optgroup>
-                <optgroup label="🏡 REAL ESTATE / PROPERTY">
-                    <option value="SMPH">SM Prime Holdings, Inc. (SMPH)</option>
-                    <option value="ALI">Ayala Land, Inc. (ALI)</option>
-                    <option value="MEG">Megaworld Corporation (MEG)</option>
-                    <option value="RLC">Robinsons Land Corporation (RLC)</option>
-                </optgroup>
-                <optgroup label="🍔 CONSUMER GOODS / FOOD / RETAIL">
-                    <option value="JFC">Jollibee Foods Corporation (JFC)</option>
-                    <option value="MONDE">Monde Nissin Corporation (MONDE)</option>
-                    <option value="PGOLD">Puregold Price Club, Inc. (PGOLD)</option>
-                    <option value="URC">Universal Robina Corp. (URC)</option>
-                </optgroup>
-                <optgroup label="⚡ UTILITIES / TELECOM / INFRA">
-                    <option value="TEL">PLDT Inc. (TEL)</option>
-                    <option value="GLO">Globe Telecom, Inc. (GLO)</option>
-                    <option value="CNVRG">Converge ICT Solutions (CNVRG)</option>
-                    <option value="ICT">International Container Port (ICT)</option>
-                </optgroup>
-            </select>
+        <!-- DROP DOWNS GRID (ASSET & STRATEGY TOGETHER) -->
+        <div class="grid-2x2" style="grid-template-columns: 1.1fr 0.9fr; gap: 10px; margin-bottom: 5px;">
+            <div class="input-group">
+                <label>Trading Asset</label>
+                <select id="asset-selector" class="input-control" onchange="handleControlChange()">
+                    <optgroup label="🏦 FINANCE / MGA BANGKO">
+                        <option value="BDO" selected>BDO Unibank (BDO)</option>
+                        <option value="BPI">Bank of PI (BPI)</option>
+                        <option value="MBT">Metrobank (MBT)</option>
+                        <option value="SECB">Security Bank (SECB)</option>
+                        <option value="CHIB">China Bank (CHIB)</option>
+                    </optgroup>
+                    <optgroup label="🏢 CONGLOMERATES / HOLDINGS">
+                        <option value="SM">SM Investments (SM)</option>
+                        <option value="AC">Ayala Corp (AC)</option>
+                        <option value="JGS">JG Summit (JGS)</option>
+                        <option value="AEV">Aboitiz Equity (AEV)</option>
+                        <option value="DMC">DMCI Holdings (DMC)</option>
+                        <option value="LTG">LT Group (LTG)</option>
+                    </optgroup>
+                    <optgroup label="🏡 REAL ESTATE / PROPERTY">
+                        <option value="SMPH">SM Prime (SMPH)</option>
+                        <option value="ALI">Ayala Land (ALI)</option>
+                        <option value="MEG">Megaworld (MEG)</option>
+                        <option value="RLC">Robinsons Land (RLC)</option>
+                    </optgroup>
+                    <optgroup label="🍔 CONSUMER GOODS / RETAIL">
+                        <option value="JFC">Jollibee Foods (JFC)</option>
+                        <option value="MONDE">Monde Nissin (MONDE)</option>
+                        <option value="PGOLD">Puregold (PGOLD)</option>
+                        <option value="URC">Universal Robina (URC)</option>
+                    </optgroup>
+                    <optgroup label="⚡ UTILITIES / TELECOM / INFRA">
+                        <option value="MER">Meralco (MER) 🌟</option>
+                        <option value="TEL">PLDT Inc. (TEL)</option>
+                        <option value="GLO">Globe Telecom (GLO)</option>
+                        <option value="CNVRG">Converge ICT (CNVRG)</option>
+                        <option value="ICT">Intl Container Port (ICT)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Strategy Indicator</label>
+                <select id="strategy-mode" class="input-control" style="color: var(--accent-purple);" onchange="handleControlChange()">
+                    <option value="ICT">ICT Matrix</option>
+                    <option value="SMC">SMC Concepts</option>
+                </select>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label>Strategy Indicator Mode</label>
-            <select class="input-control" id="strategy-mode" onchange="fetchLiveMarketData()">
-                <option value="ICT">ICT (Inner Circle Trader) Matrix</option>
-                <option value="SMC">SMC (Smart Money Concepts)</option>
-            </select>
+        <!-- 📊 REAL-TIME CANDLESTICK GRAPH -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <span>⚡ REAL-TIME STREAMING GRAPH</span>
+                <span id="chart-strat-badge" style="color: var(--accent-purple); font-weight: bold;">MODE: ICT</span>
+            </div>
+            <canvas id="cryptoCandleChart"></canvas>
         </div>
 
         <div class="grid-2x2">
@@ -271,6 +312,7 @@
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
     </div>
 
+    <!-- TAB 2: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
         <div class="status-card orange">
@@ -287,6 +329,7 @@
         </div>
     </div>
 
+    <!-- TAB 3: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div class="section-title">AI Candlestick Sign & Identification Engine</div>
         <div id="candle-card-color" class="status-card red">
@@ -302,6 +345,7 @@
         </div>
     </div>
 
+    <!-- TAB 4: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title">PSE Account Metrics Engine</div>
         <div class="grid-2x2">
@@ -315,42 +359,33 @@
         </div>
     </div>
 
+    <!-- TAB 5: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div id="history-container">
-            </div>
+            <!-- Dito papasok ang auto logs -->
+        </div>
     </div>
 
     <footer>Developed by: Renante Fullo</footer>
 
     <script>
         let liveRefreshInterval = null;
+        let candleHistoryList = []; // Array para itabi ang huling 6 na kandila sa graph
 
-        // MATALINONG HISTORICAL POOL: Baseline market matrix parameters para sa 22 sikat na PSE stocks
         const historicalMarketDatabase = {
-            "BDO": { base: 155.20, vol: 0.010 },
-            "BPI": { base: 121.50, vol: 0.009 },
-            "MBT": { base: 68.40, vol: 0.011 },
-            "SECB": { base: 72.10, vol: 0.014 },
-            "CHIB": { base: 36.80, vol: 0.012 },
-            "SM": { base: 942.00, vol: 0.007 },
-            "AC": { base: 685.00, vol: 0.008 },
-            "JGS": { base: 41.25, vol: 0.015 },
-            "AEV": { base: 42.50, vol: 0.013 },
-            "DMC": { base: 11.30, vol: 0.018 },
-            "LTG": { base: 10.15, vol: 0.016 },
-            "SMPH": { base: 32.45, vol: 0.010 },
-            "ALI": { base: 31.10, vol: 0.014 },
-            "MEG": { base: 2.12, vol: 0.024 },
-            "RLC": { base: 15.30, vol: 0.015 },
-            "JFC": { base: 258.60, vol: 0.009 },
-            "MONDE": { base: 10.12, vol: 0.020 },
-            "PGOLD": { base: 28.40, vol: 0.013 },
-            "URC": { base: 112.50, vol: 0.011 },
-            "TEL": { base: 1345.00, vol: 0.006 },
-            "GLO": { base: 1718.00, vol: 0.007 },
-            "CNVRG": { base: 15.36, vol: 0.022 },
-            "ICT": { base: 346.20, vol: 0.011 }
+            "BDO": { base: 155.20, vol: 0.010 }, "BPI": { base: 121.50, vol: 0.009 },
+            "MBT": { base: 68.40, vol: 0.011 }, "SECB": { base: 72.10, vol: 0.014 },
+            "CHIB": { base: 36.80, vol: 0.012 }, "SM": { base: 942.00, vol: 0.007 },
+            "AC": { base: 685.00, vol: 0.008 }, "JGS": { base: 41.25, vol: 0.015 },
+            "AEV": { base: 42.50, vol: 0.013 }, "DMC": { base: 11.30, vol: 0.018 },
+            "LTG": { base: 10.15, vol: 0.016 }, "SMPH": { base: 32.45, vol: 0.010 },
+            "ALI": { base: 31.10, vol: 0.014 }, "MEG": { base: 2.12, vol: 0.024 },
+            "RLC": { base: 15.30, vol: 0.015 }, "JFC": { base: 258.60, vol: 0.009 },
+            "MONDE": { base: 10.12, vol: 0.020 }, "PGOLD": { base: 28.40, vol: 0.013 },
+            "URC": { base: 112.50, vol: 0.011 }, "MER": { base: 395.00, vol: 0.008 }, 
+            "TEL": { base: 1345.00, vol: 0.006 }, "GLO": { base: 1718.00, vol: 0.007 },
+            "CNVRG": { base: 15.36, vol: 0.022 }, "ICT": { base: 346.20, vol: 0.011 }
         };
 
         function switchTab(buttonElement, tabId) {
@@ -360,20 +395,92 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // AUTO HISTORY CALCULATOR ENGINE (Para sa tumpak at malinis na data signal)
+        // DRAW METHOD: Gumagawa ng tunay na graphical candles gamit ang Canvas HTML5
+        function renderCandlestickGraph() {
+            const canvas = document.getElementById("cryptoCandleChart");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            
+            // I-adjust ang lapad ng canvas resolution sa tamang screen size
+            canvas.width = canvas.parentElement.clientWidth - 20;
+            canvas.height = 140;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (candleHistoryList.length === 0) return;
+
+            // Alamin ang pinakamataas at pinakamababang presyo sa listahan para mag-scale ang graph nang sakto
+            let allHighs = candleHistoryList.map(c => c.high);
+            let allLows = candleHistoryList.map(c => c.low);
+            let maxPrice = Math.max(...allHighs);
+            let minPrice = Math.min(...allLows);
+            let padding = (maxPrice - minPrice) * 0.1 || 1;
+            maxPrice += padding;
+            minPrice -= padding;
+
+            const totalCandles = candleHistoryList.length;
+            const candleWidth = Math.floor((canvas.width * 0.6) / totalCandles);
+            const gap = Math.floor((canvas.width * 0.3) / (totalCandles + 1));
+
+            // Gumuhit ng background gridlines para mukhang professional pro interface
+            ctx.strokeStyle = "#1f222e";
+            ctx.lineWidth = 1;
+            for (let l = 1; l < 4; l++) {
+                let yLine = (canvas.height / 4) * l;
+                ctx.beginPath();
+                ctx.moveTo(0, yLine);
+                ctx.lineTo(canvas.width, yLine);
+                ctx.stroke();
+            }
+
+            // Loop para isa-isang iguhit ang bawat kandila mula sa data array
+            candleHistoryList.forEach((candle, index) => {
+                let xPos = gap + index * (candleWidth + gap);
+
+                // Formula para i-convert ang stock market price into HTML pixels
+                let yOpen = canvas.height - ((candle.open - minPrice) / (maxPrice - minPrice)) * canvas.height;
+                let yClose = canvas.height - ((candle.close - minPrice) / (maxPrice - minPrice)) * canvas.height;
+                let yHigh = canvas.height - ((candle.high - minPrice) / (maxPrice - minPrice)) * canvas.height;
+                let yLow = canvas.height - ((candle.low - minPrice) / (maxPrice - minPrice)) * canvas.height;
+
+                let isBullish = candle.close >= candle.open;
+                let candleColor = isBullish ? "#22c55e" : "#ef4444";
+
+                // 1. Iguhit ang mitsa (Wick/Shadow) ng kandila
+                ctx.strokeStyle = candleColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(xPos + candleWidth / 2, yHigh);
+                ctx.lineTo(xPos + candleWidth / 2, yLow);
+                ctx.stroke();
+
+                // 2. Iguhit ang katawan (Body) ng kandila
+                ctx.fillStyle = candleColor;
+                let bodyHeight = Math.abs(yClose - yOpen) || 2; // Siguruhing may kapal kahit kaunti kung pantay
+                let bodyTop = Math.min(yOpen, yClose);
+                ctx.fillRect(xPos, bodyTop, candleWidth, bodyHeight);
+            });
+        }
+
+        // ACCURATE HISTORY TIMELINE GENERATOR
         function syncHistoricalTimeline(symbol) {
             const historyContainer = document.getElementById('history-container');
-            historyContainer.innerHTML = ''; // Linisin ang lumang logs ng ibang stock
+            historyContainer.innerHTML = ''; 
+            candleHistoryList = []; // I-reset ang listahan ng kandila para sa bagong piniling asset
             
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.015 };
             
-            // Bumuo ng 4 na magkakasunod na nakaraang trading intervals base sa volatility signature ng napiling stock
             for (let i = 4; i > 0; i--) {
                 let timeFrame = `${i * 15}m ago`;
                 let variance = (Math.sin(i) * 0.4) * (config.base * config.vol);
-                let pastClose = (config.base + variance).toFixed(2);
-                let pastOpen = (config.base + (variance * 0.9)).toFixed(2);
+                let pastClose = parseFloat((config.base + variance).toFixed(2));
+                let pastOpen = parseFloat((config.base + (variance * 0.9)).toFixed(2));
+                let pastHigh = parseFloat((Math.max(pastOpen, pastClose) + (config.base * 0.003)).toFixed(2));
+                let pastLow = parseFloat((Math.min(pastOpen, pastClose) - (config.base * 0.003)).toFixed(2));
                 
+                // I-save sa array para magamit ng Candlestick Graph
+                candleHistoryList.push({ open: pastOpen, high: pastHigh, low: pastLow, close: pastClose });
+
                 const logHTML = `
                     <div class="log-item" style="opacity: 0.65; border-right: 3px solid var(--border-color);">
                         <div class="log-info">
@@ -387,41 +494,48 @@
             }
         }
 
-        // ONLINE REFRESH TICK ENGINE
+        // RE-CALCULATE TIMELINE TICK ENGINE
         function fetchLiveMarketData() {
-            const selector = document.getElementById('asset-selector');
-            const symbol = selector.value;
+            const symbol = document.getElementById('asset-selector').value;
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
+            const stratMode = document.getElementById('strategy-mode').value;
 
-            // Dynamic fluctuation simulations batay sa tunay na galaw ng stock market
+            document.getElementById('chart-strat-badge').innerText = `MODE: ${stratMode}`;
+
             const multiplier = (Math.random() - 0.485) * (config.base * config.vol);
-            const close = (config.base + multiplier).toFixed(2);
-            const open = (config.base + (Math.random() - 0.5) * (config.base * 0.004)).toFixed(2);
-            const high = (Math.max(parseFloat(open), parseFloat(close)) + (Math.random() * (config.base * 0.006))).toFixed(2);
-            const low = (Math.min(parseFloat(open), parseFloat(close)) - (Math.random() * (config.base * 0.006))).toFixed(2);
+            const close = parseFloat((config.base + multiplier).toFixed(2));
+            const open = parseFloat((config.base + (Math.random() - 0.5) * (config.base * 0.004)).toFixed(2));
+            const high = parseFloat((Math.max(open, close) + (Math.random() * (config.base * 0.006))).toFixed(2));
+            const low = parseFloat((Math.min(open, close) - (Math.random() * (config.base * 0.006))).toFixed(2));
 
-            // Awtomatikong ipasok ang value sa input dashboard boxes
             document.getElementById('inp-open').value = open;
             document.getElementById('inp-high').value = high;
             document.getElementById('inp-low').value = low;
             document.getElementById('inp-close').value = close;
 
-            // Baguhin ang Live Monitor Display sa itaas
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-            document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('live-asset-price').innerText = `₱${close.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('auto-status-text').innerText = "Live automated trade matrix actively syncing...";
+
+            // Ipasok ang bagong live market candle sa ating graph engine feed list
+            candleHistoryList.push({ open: open, high: high, low: low, close: close });
+            if (candleHistoryList.length > 7) {
+                candleHistoryList.shift(); // Tanggalin ang pinakalumang kandila para magkasya sa mobile view
+            }
+            
+            // Tawagin ang Canvas Painter para i-render ang panibagong kandila
+            renderCandlestickGraph();
 
             processAILogic(symbol, open, high, low, close);
         }
 
-        // INTELLIGENT AI SIGNAL PROCESSOR
+        // INTELLIGENT INDICATOR STRATEGY MATRIX
         function processAILogic(symbol, o, h, l, c) {
             const openNum = parseFloat(o);
             const closeNum = parseFloat(c);
             const stratMode = document.getElementById('strategy-mode').value;
             const isBearish = closeNum < openNum;
 
-            // 1. Candlestick Verification View
             const patternName = document.getElementById('detected-pattern-name');
             const biasBadge = document.getElementById('market-bias-badge');
             const explanation = document.getElementById('pattern-explanation');
@@ -442,23 +556,20 @@
                 biasBadge.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
                 biasBadge.style.color = "var(--accent-green)";
                 candleCard.style.borderColor = "var(--accent-green)";
-                explanation.innerText = `Napasok na ng mga institutional orders ang ${symbol}! Sumipa paitaas patungong ₱${c}. Solid ang foundation ng setup na ito para sa panibagong directional move.`;
+                explanation.innerText = `Napasok na ng mga institutional orders ang ${symbol}! Sumipa paitaas patungong ₱${c}. Solid ang foundation ng setup na ito para sa panibagong directional move batay sa ${stratMode} structure.`;
             }
 
-            // 2. Planner AI View Calculations
-            document.getElementById('ai-rsi-text').innerText = isBearish ? "RSI: 39.40 (Near Oversold Threshold — Abangan ang compression bounce)" : "RSI: 61.80 (Healthy Acceleration — Patuloy na tinutulak ng mga buyers)";
-            document.getElementById('ai-conviction-text').innerText = isBearish ? "📉 MACRO RE-TEST DETECTED — STAND BY" : "🚀 ORDER BLOCK ENTRY MATCHED — HIGH ACCURACY";
+            document.getElementById('ai-rsi-text').innerText = isBearish ? `RSI: 39.40 (Near Oversold Threshold — Abangan ang compression bounce sa ${stratMode})` : `RSI: 61.80 (Healthy Acceleration — Tinutulak ng buyers via ${stratMode})`;
+            document.getElementById('ai-conviction-text').innerText = isBearish ? `📉 [${stratMode}] MACRO RE-TEST DETECTED — STAND BY` : `🚀 [${stratMode}] ORDER BLOCK ENTRY MATCHED — HIGH ACCURACY`;
             document.getElementById('ai-move-text').innerText = isBearish ? 
                 `Huwag mong saluhin ang bumabagsak na kutsilyo boss. Re-entry setup range: ₱${l}.` : 
-                `Magandang posisyon pumasok boss! Ang target price point nito ay nasa ₱${(high * 1.018).toFixed(2)} at ang proteksyon mo o Stop Loss ay i-pwesto sa ₱${(l * 0.992).toFixed(2)}.`;
+                `Magandang posisyon pumasok boss! Ang target price point nito ay nasa ₱${(h * 1.018).toFixed(2)} at ang proteksyon mo o Stop Loss ay i-pwesto sa ₱${(l * 0.992).toFixed(2)}.`;
 
-            // 3. System Metrics Analytics
             document.getElementById('stat-winrate').innerText = isBearish ? "66.5%" : "75.10%";
             document.getElementById('final-action-text').innerText = isBearish ? "HOLD / MONITOR" : "CONFIRMED MARKET BUY";
             document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
             document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
 
-            // 4. Inject Dynamic Fresh Item to Logs
             const historyContainer = document.getElementById('history-container');
             const currentTimeStr = new Date().toLocaleTimeString();
             const freshLogHTML = `
@@ -470,24 +581,16 @@
                     <div class="log-status" style="color:${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">LIVE TICK</div>
                 </div>
             `;
-            // Ipasok ang live tick sa itaas ng mga pre-saved nodes
             historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
             
-            // Limitahan lang sa 5 items para manatiling mabilis ang rendering sa screens ng cellphone
             if (historyContainer.children.length > 5) {
                 historyContainer.removeChild(historyContainer.lastChild);
             }
         }
 
-        // TRIGGER ON SELECTION CHANGE
-        function handleAssetChange() {
-            const selector = document.getElementById('asset-selector');
-            const selectedSymbol = selector.value;
-            
-            // 1. Sync ang buong timeline historical arrays para sa accurate signal analysis
-            syncHistoricalTimeline(selectedSymbol);
-            
-            // 2. Patakbuhin agad ang live calculator feed
+        function handleControlChange() {
+            const selectedSymbol = document.getElementById('asset-selector').value;
+            syncHistoricalTimeline(selectedSymbol); 
             fetchLiveMarketData();
         }
 
@@ -496,15 +599,11 @@
             alert("Philippine Exchange matrix algorithm forced refresh complete!");
         }
 
-        // AUTOMATION HEARTBEAT TIMERS
         function deployPSEAutomationSuite() {
             if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            
             const initialSymbol = document.getElementById('asset-selector').value;
-            syncHistoricalTimeline(initialSymbol); // I-sync ang history sa unang bukas
+            syncHistoricalTimeline(initialSymbol);
             fetchLiveMarketData();
-            
-            // Awtomatikong gumagana at nag-uupdate kada 4 na segundo para sa totoong online dashboard feel!
             liveRefreshInterval = setInterval(fetchLiveMarketData, 4000);
         }
 
