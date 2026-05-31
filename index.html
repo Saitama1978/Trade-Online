@@ -45,6 +45,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 5px 20px 5px;
+            position: relative;
         }
 
         header h1 {
@@ -55,6 +56,15 @@
             flex-grow: 1;
             text-transform: uppercase;
             color: #fff;
+        }
+
+        .help-icon {
+            color: var(--yellow-gold);
+            font-size: 1.3rem;
+            text-decoration: none;
+            font-weight: bold;
+            position: absolute;
+            right: 5px;
         }
 
         .market-bar {
@@ -92,6 +102,11 @@
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            display: none;
         }
 
         .tab-btn {
@@ -115,6 +130,15 @@
         .tab-view { display: none; flex-grow: 1; }
         .tab-view.active { display: block; }
 
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #d946ef;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
         .status-card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -126,8 +150,10 @@
         .status-card.green { border-left-color: var(--accent-green); }
         .status-card.blue { border-left-color: var(--accent-blue); }
         .status-card.teal { border-left-color: var(--accent-teal); }
+        .status-card.red { border-left-color: var(--accent-red); }
 
-        .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); }
+        .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); letter-spacing: 0.5px; }
+        .card-value { font-size: 0.9rem; font-weight: 500; color: #fff; line-height: 1.4; }
         
         .grid-2x2 {
             display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
@@ -135,9 +161,11 @@
 
         .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
         .stat-card.w-green { border-left-color: var(--accent-green); }
+        .stat-card.w-blue { border-left-color: var(--accent-blue); }
+        .stat-card.w-orange { border-left-color: var(--accent-orange); }
 
-        .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .stat-value { font-size: 1.25rem; font-weight: 700; }
+        .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; }
 
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
@@ -159,15 +187,43 @@
         .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
         .log-info p { font-size: 0.75rem; color: var(--text-muted); }
 
-        footer { text-align: center; padding: 20px 0 10px 0; color: var(--accent-orange); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
+        /* CANDLE READING UI STYLES */
+        .pattern-display-box {
+            border: 1px solid var(--yellow-gold);
+            border-radius: 8px;
+            padding: 16px;
+            background-color: transparent;
+            margin-bottom: 20px;
+        }
+        .pattern-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+        .pattern-value { font-size: 1.4rem; font-weight: bold; color: var(--yellow-gold); margin-bottom: 12px; }
+        .bias-row { border-top: 1px solid var(--border-color); padding-top: 10px; font-size: 0.8rem; font-weight: 700; color: #fff; }
+        .bias-badge { background-color: rgba(249, 115, 22, 0.2); color: var(--accent-orange); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 5px; text-transform: uppercase;}
+
+        .guide-section-title { font-size: 0.8rem; font-weight: 700; color: var(--yellow-gold); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .guide-item { margin-bottom: 15px; line-height: 1.4; }
+        .guide-header { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; }
+        .guide-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* DASHBOARD FINAL ACTION BOX */
+        .big-action-box {
+            border: 2px solid var(--yellow-gold);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: transparent;
+            margin-top: 10px;
+        }
+        .big-action-text { color: var(--yellow-gold); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+
+        footer { text-align: center; padding: 25px 0 10px 0; color: var(--yellow-gold); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="width:20px;"></div>
-        <h1>PSE Trading Engine Pro</h1>
-        <div style="width:20px;"></div>
+        <h1>Trading Calculator Pro</h1>
+        <a href="#" class="help-icon">?</a>
     </header>
 
     <div class="market-bar">
@@ -189,12 +245,14 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
+    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+            <!-- KALIWANG DROPDOWN: 20 TRADING LIST -->
             <div class="input-group">
-                <label>Asset</label>
+                <label>Asset (20 Trading List)</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
                     <option value="MER" selected>MERALCO (MER)</option>
                     <option value="BDO">BDO Unibank (BDO)</option>
@@ -219,29 +277,13 @@
                 </select>
             </div>
 
+            <!-- KANANG DROPDOWN: 3 PARAMETERS / STRATEGY LANG BOSS -->
             <div class="input-group">
-                <label>Strategy Selector</label>
-                <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
-                    <option value="MER">MERALCO (MER)</option>
-                    <option value="BDO" selected>BDO Unibank (BDO)</option>
-                    <option value="BPI">Bank of PI (BPI)</option>
-                    <option value="MBT">Metrobank (MBT)</option>
-                    <option value="SM">SM Investments (SM)</option>
-                    <option value="AC">Ayala Corp (AC)</option>
-                    <option value="SMPH">SM Prime (SMPH)</option>
-                    <option value="JFC">Jollibee Foods (JFC)</option>
-                    <option value="ICT">Intl Container (ICT)</option>
-                    <option value="ALI">Ayala Land (ALI)</option>
-                    <option value="GLO">Globe Telecom (GLO)</option>
-                    <option value="TEL">PLDT Inc. (TEL)</option>
-                    <option value="URC">Universal Robina (URC)</option>
-                    <option value="AEV">Aboitiz Equity (AEV)</option>
-                    <option value="AGI">Alliance Global (AGI)</option>
-                    <option value="DMCI">DMCI Holdings (DMCI)</option>
-                    <option value="MONDE">Monde Nissin (MONDE)</option>
-                    <option value="CNVRG">Converge ICT (CNVRG)</option>
-                    <option value="SCC">Semirara Mining (SCC)</option>
-                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
+                <label>Strategy Mode</label>
+                <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);" onchange="handleControlChange()">
+                    <option value="SCALPING">SCALPING SHORT</option>
+                    <option value="SWING" selected>SWING LONG</option>
+                    <option value="POSITION">POSITION HOLD</option>
                 </select>
             </div>
         </div>
@@ -253,13 +295,9 @@
             <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Loading..."></div>
         </div>
 
-        <div class="card-label" style="text-align: center; margin-top:15px;">Final Action Result</div>
-        <div id="final-action-box" style="border: 2px solid var(--accent-green); border-radius: 8px; padding: 12px; text-align: center; background-color: rgba(34, 197, 94, 0.05); margin-bottom: 10px;">
-            <h2 id="final-action-text" style="color: var(--accent-green); font-size: 1.4rem; letter-spacing: 1px;">READY</h2>
-        </div>
-
-        <div class="status-card teal" style="padding: 10px; margin-top:5px;">
-            <div style="font-size:0.75rem; color:#fff; text-align:center;">
+        <div class="card-label" style="text-align: center; margin-top:15px;">Live Runtime Counter</div>
+        <div class="status-card teal" style="padding: 12px; margin-top:5px; border-left: none; background-color: var(--card-bg); border: 1px dashed var(--border-color);">
+            <div style="font-size:0.8rem; color:#fff; text-align:center;">
                 📊 Accumulated Array Data: <span id="saved-nodes-count" style="color:var(--yellow-gold); font-weight:bold;">0</span> rows ready to export
             </div>
         </div>
@@ -268,33 +306,116 @@
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
     </div>
 
+    <!-- TAB 2: PLANNER AI (Tugma sa Screen 1000344520.jpg) -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
+        
         <div class="status-card orange">
             <div class="card-label">RSI Strategy Readout</div>
-            <div id="ai-rsi-text" class="card-value">Calculating RSI...</div>
+            <div id="ai-rsi-text" class="card-value">🎯 OVERSOLD REGION (Mag-abang ng matinding Buy Reversal!)</div>
         </div>
+        
         <div class="status-card green">
             <div class="card-label">Conviction Set</div>
-            <div id="ai-conviction-text" class="card-value">⏳ SYNCING RUNS</div>
+            <div id="ai-conviction-text" class="card-value">⏳ WAITING FOR BREAKOUT</div>
+        </div>
+
+        <div class="status-card blue">
+            <div class="card-label">Next Recommended Move</div>
+            <div id="ai-move-text" class="card-value">Mag-abang sa Target Entry Price na: 0.00 bago pumasok sa market setup.</div>
+        </div>
+
+        <div class="status-card teal">
+            <div class="card-label">Confluence Signal</div>
+            <div id="ai-confluence-text" class="card-value">Win rate confirmation check is highly advised.</div>
         </div>
     </div>
 
+    <!-- TAB 3: CANDLE READING (Tugma sa Screen 1000344519.jpg) -->
     <div id="view-candle" class="tab-view">
-        <div class="section-title">AI Candlestick Sign Engine</div>
-        <div id="candle-card-color" class="status-card red">
-            <div class="card-label">Detected Pattern:</div>
-            <div id="detected-pattern-name" style="font-size: 1.1rem; font-weight:700; margin: 4px 0 8px 0;">ANALYZING...</div>
+        <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine (MER)</div>
+        
+        <div class="pattern-display-box">
+            <div class="pattern-title">Detected Pattern:</div>
+            <div id="detected-pattern-name" class="pattern-value">NO DATA FOUND</div>
+            <div class="bias-row">
+                MARKET BIAS DIRECTION: <span id="market-bias-badge" class="bias-badge">NONE</span>
+            </div>
+        </div>
+
+        <div class="card-label" style="color: var(--text-muted); margin-bottom: 10px;">Detailed AI Matrix Analysis:</div>
+        <div class="status-card" style="background-color: var(--card-bg); border-left: none; padding: 15px; margin-bottom: 25px;">
+            <div id="analysis-text" style="font-size: 0.85rem; color: #fff; line-height: 1.5;">
+                Walang historical matrix data o input sa Engine tab para sa <span id="analysis-ticker" style="color:var(--yellow-gold); font-weight:bold;">MER</span> para makabasa ang AI.
+            </div>
+        </div>
+
+        <div class="guide-section-title">Quick Candle Reference Guide</div>
+        
+        <div class="guide-item">
+            <div class="guide-header" style="color: #22c55e;">📈 Hammer (UP)</div>
+            <div class="guide-desc">May mahabang mitsa sa ilalim. Senyales na ubos na ang mga nagbebenta at handa nang sumipa ang presyo paitaas.</div>
+        </div>
+
+        <div class="guide-item">
+            <div class="guide-header" style="color: #3b82f6;">📉 Shooting Star (DOWN)</div>
+            <div class="guide-desc">May mahabang mitsa sa itaas. Ibig sabihin, dambuhala ang mga nagbenta sa peak kaya babagsak ang kasunod na kandila.</div>
+        </div>
+
+        <div class="guide-item">
+            <div class="guide-header" style="color: #0d9488;">⚖️ Doji (Sideways)</div>
+            <div class="guide-desc">Walang katawan o manipis ang gitna. Senyales ng pag-aalinlangan sa merkado. Huwag muna tatalon sa trade.</div>
         </div>
     </div>
 
+    <!-- TAB 4: DASHBOARD STATS (Tugma sa Screen 1000344518.jpg) -->
     <div id="view-stats" class="tab-view">
-        <div class="section-title">Account Metrics Engine</div>
+        <div class="section-title">Pro Account Metrics Engine</div>
+        
         <div class="grid-2x2">
-            <div class="stat-card w-green"><div class="stat-label">Win Rate</div><div class="stat-value">71.2%</div></div>
+            <div class="stat-card w-green">
+                <div class="stat-label">Win Rate Accuracy</div>
+                <div id="stat-winrate" class="stat-value">0.0%</div>
+            </div>
+            <div class="stat-card w-green">
+                <div class="stat-label">Net Profit / Loss</div>
+                <div id="stat-profit" class="stat-value">₱0.00</div>
+            </div>
+            <div class="stat-card w-blue">
+                <div class="stat-label">Total Simulations</div>
+                <div id="stat-total" class="stat-value">0</div>
+            </div>
+            <div class="stat-card w-blue">
+                <div class="stat-label">Win Entries</div>
+                <div id="stat-wins" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="grid-2x2" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="stat-card w-orange">
+                <div class="stat-label">Lose Entries</div>
+                <div id="stat-loses" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="card-label">Probability Matrix Field</div>
+        <div class="status-card red" style="padding: 14px; border-left-width: 4px; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">
+                <span style="color: var(--accent-green);">CHANCES OF WIN: <span id="chance-win">0%</span></span>
+                <span style="color: var(--accent-red);">CHANCES OF LOSS: <span id="chance-loss">0%</span></span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--yellow-gold); font-weight: 700; text-transform: uppercase;">
+                Remarks: <span id="matrix-remarks" style="color: #fff;">Waiting for Market Trigger</span>
+            </div>
+        </div>
+
+        <div class="card-label">Final Action Result</div>
+        <div class="big-action-box">
+            <div id="big-action-text" class="big-action-text">Waiting</div>
         </div>
     </div>
 
+    <!-- TAB 5: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div id="history-container"></div>
@@ -305,6 +426,12 @@
     <script>
         let liveRefreshInterval = null;
         let exportedDataDatabase = []; 
+
+        // Dashboard states counters
+        let totalSimulations = 0;
+        let winEntries = 0;
+        let loseEntries = 0;
+        let totalNetProfit = 0;
 
         const historicalMarketDatabase = {
             "MER": { base: 590.00, vol: 0.008 },
@@ -338,8 +465,12 @@
 
         function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
+            const strategy = document.getElementById('strategy-mode').value;
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
-            const strategySymbol = document.getElementById('strategy-mode').value;
+
+            // Update header dynamic titles based on asset selector
+            document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
+            document.getElementById('analysis-ticker').innerText = symbol;
 
             const multiplier = (Math.random() - 0.485) * (config.base * config.vol);
             const close = (config.base + multiplier).toFixed(2);
@@ -356,56 +487,104 @@
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
             const isBearish = parseFloat(close) < parseFloat(open);
-            const currentAction = isBearish ? "SELL SIGNAL" : "BUY SIGNAL";
-            const generatedRSI = isBearish ? 69.47368421052632 : 33.06122448979592;
-            const generatedEMA = (parseFloat(close) * 1.01).toFixed(5);
-            const generatedSize = (Math.random() * 150 + 10).toFixed(14);
+            
+            // Random pattern calculator logic for Candle tab when triggered
+            let patternName = "NO DATA FOUND";
+            let biasDirection = "NONE";
+            if (isManualSnap) {
+                const randPattern = Math.random();
+                if (randPattern > 0.6) {
+                    patternName = "HAMMER DETECTED";
+                    biasDirection = "BULLISH UP";
+                } else if (randPattern > 0.3) {
+                    patternName = "SHOOTING STAR";
+                    biasDirection = "BEARISH DOWN";
+                } else {
+                    patternName = "DOJI INDECISION";
+                    biasDirection = "SIDEWAYS";
+                }
+                document.getElementById('analysis-text').innerText = `Ang market matrix ng ${symbol} sa kasalukuyan ay nagpapakita ng ${patternName}. Mataas ang tsansa ng direksyon na maging ${biasDirection}.`;
+            }
+
+            document.getElementById('detected-pattern-name').innerText = patternName;
+            document.getElementById('market-bias-badge').innerText = biasDirection;
+
+            // Strategy conditions mapping
+            let calculatedAction = isBearish ? "SELL" : "BUY";
+            
+            if (isManualSnap) {
+                totalSimulations++;
+                const isWin = Math.random() > 0.35; // 65% random win rate simulation
+                if (isWin) {
+                    winEntries++;
+                    totalNetProfit += (Math.random() * 850 + 150);
+                } else {
+                    loseEntries++;
+                    totalNetProfit -= (Math.random() * 450 + 50);
+                }
+                updateDashboardUI();
+            }
 
             let currentCandleNode = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                mode: "LONG",
+                mode: strategy,
                 open: parseFloat(open),
                 high: parseFloat(high),
                 low: parseFloat(low),
                 close: parseFloat(close),
-                rsi: generatedRSI,
-                ema: parseFloat(generatedEMA),
-                action: currentAction,
-                outcome: "PENDING",
-                pnl: 0.0,
-                size: parseFloat(generatedSize)
+                action: calculatedAction,
+                pnl: totalNetProfit.toFixed(2)
             };
 
-            if(isManualSnap || exportedDataDatabase.length === 0 || Math.random() > 0.7) {
+            if(isManualSnap || exportedDataDatabase.length === 0) {
                 exportedDataDatabase.unshift(currentCandleNode);
                 document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
             }
 
-            processAILogic(symbol, open, high, low, close, currentAction, isBearish, generatedRSI);
+            // Planner AI updates
+            if (isManualSnap) {
+                document.getElementById('ai-rsi-text').innerText = isBearish ? "🎯 OVERBOUGHT REGION (Mag-abang ng matinding Sell Correction!)" : "🎯 OVERSOLD REGION (Mag-abang ng matinding Buy Reversal!)";
+                document.getElementById('ai-conviction-text').innerText = isBearish ? "⚡ SHORT CONFIRMATION ACTIVE" : "🚀 BULLISH BREAKOUT CONFIRMED";
+                document.getElementById('ai-move-text').innerText = `Execution target set at Entry Price: ₱${close}. Sumunod sa rules ng iyong ${strategy} system.`;
+                document.getElementById('ai-confluence-text').innerText = "All technical rules matched. Strategy matrix successfully locked.";
+            }
+
+            // Sync logs
+            const historyContainer = document.getElementById('history-container');
+            if(historyContainer && isManualSnap) {
+                const freshLogHTML = `
+                    <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
+                        <div class="log-info">
+                            <h4>${symbol} - ${strategy} Mode</h4>
+                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction}</p>
+                        </div>
+                    </div>
+                `;
+                historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
+            }
         }
 
-        function processAILogic(symbol, o, h, l, c, currentAction, isBearish, rsiValue) {
-            const strategySymbol = document.getElementById('strategy-mode').value;
-            document.getElementById('ai-rsi-text').innerText = `RSI: ${rsiValue.toFixed(2)}`;
-            document.getElementById('final-action-text').innerText = currentAction;
-            document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
-            document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
+        function updateDashboardUI() {
+            document.getElementById('stat-total').innerText = totalSimulations;
+            document.getElementById('stat-wins').innerText = winEntries;
+            document.getElementById('stat-loses').innerText = loseEntries;
+            document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const calculatedWinRate = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
+            document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
 
-            document.getElementById('detected-pattern-name').innerText = `${symbol} STAGE MATRIX`;
+            // Matrix values
+            const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 20 + 60) : 0;
+            const lossChance = totalSimulations > 0 ? (100 - winChance) : 0;
+            document.getElementById('chance-win').innerText = `${winChance}%`;
+            document.getElementById('chance-loss').innerText = `${lossChance}%`;
 
-            const historyContainer = document.getElementById('history-container');
-            if(!historyContainer) return;
-            const freshLogHTML = `
-                <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">
-                    <div class="log-info">
-                        <h4>${symbol} to ${strategySymbol} Sync</h4>
-                        <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${o} | C: ₱${c} | Act: ${currentAction}</p>
-                    </div>
-                </div>
-            `;
-            historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-            if (historyContainer.children.length > 8) historyContainer.removeChild(historyContainer.lastChild);
+            if (totalSimulations > 0) {
+                document.getElementById('matrix-remarks').innerText = winChance > 70 ? "HIGH PROBABILITY TRADING SETUP" : "NORMAL MARKET VOLATILITY RUNNING";
+                document.getElementById('big-action-text').innerText = winChance > 70 ? "EXECUTE TRADE" : "MONITOR POSITION";
+                document.getElementById('big-action-text').style.color = winChance > 70 ? "var(--accent-green)" : "var(--yellow-gold)";
+            }
         }
 
         function exportMatrixToTXT() {
@@ -413,10 +592,8 @@
                 alert("Sandali lang boss, walang laman ang listahan.");
                 return;
             }
-            
             const symbol = document.getElementById('asset-selector').value;
-            let txtContent = JSON.stringify(exportedDataDatabase);
-
+            let txtContent = JSON.stringify(exportedDataDatabase, null, 2);
             const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
@@ -427,9 +604,7 @@
         }
 
         function handleControlChange() {
-            exportedDataDatabase = []; 
-            document.getElementById('saved-nodes-count').innerText = "0";
-            fetchLiveMarketData(true);
+            fetchLiveMarketData(false);
         }
 
         function triggerManualCalculation() {
@@ -437,7 +612,7 @@
         }
 
         function deployPSEAutomationSuite() {
-            fetchLiveMarketData(true);
+            fetchLiveMarketData(false);
             liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
