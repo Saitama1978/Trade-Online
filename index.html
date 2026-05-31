@@ -126,7 +126,6 @@
         .status-card.green { border-left-color: var(--accent-green); }
         .status-card.blue { border-left-color: var(--accent-blue); }
         .status-card.teal { border-left-color: var(--accent-teal); }
-        .status-card.red { border-left-color: var(--accent-red); }
 
         .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); }
         
@@ -136,7 +135,6 @@
 
         .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
         .stat-card.w-green { border-left-color: var(--accent-green); }
-        .stat-card.w-blue { border-left-color: var(--accent-blue); }
 
         .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
         .stat-value { font-size: 1.25rem; font-weight: 700; }
@@ -160,11 +158,6 @@
         }
         .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
         .log-info p { font-size: 0.75rem; color: var(--text-muted); }
-
-        .indicator-pill {
-            font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-left: 5px;
-        }
-        .pill-down { background-color: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
 
         footer { text-align: center; padding: 20px 0 10px 0; color: var(--accent-orange); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
     </style>
@@ -196,15 +189,13 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
-    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
             <div class="input-group">
-                <label>Asset (20 Trading List)</label>
+                <label>Asset</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
-                    <!-- LISTAHAN NG 20 TRADING STOCKS KASAMA SI ICT -->
                     <option value="MER" selected>MERALCO (MER)</option>
                     <option value="BDO">BDO Unibank (BDO)</option>
                     <option value="BPI">Bank of PI (BPI)</option>
@@ -229,11 +220,28 @@
             </div>
 
             <div class="input-group">
-                <label>Strategy Mode</label>
-                <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);">
-                    <option value="SCALPING">SCALPING SHORT</option>
-                    <option value="SWING" selected>SWING LONG</option>
-                    <option value="POSITION">POSITION HOLD</option>
+                <label>Strategy Selector</label>
+                <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
+                    <option value="MER">MERALCO (MER)</option>
+                    <option value="BDO" selected>BDO Unibank (BDO)</option>
+                    <option value="BPI">Bank of PI (BPI)</option>
+                    <option value="MBT">Metrobank (MBT)</option>
+                    <option value="SM">SM Investments (SM)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
+                    <option value="JFC">Jollibee Foods (JFC)</option>
+                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="ALI">Ayala Land (ALI)</option>
+                    <option value="GLO">Globe Telecom (GLO)</option>
+                    <option value="TEL">PLDT Inc. (TEL)</option>
+                    <option value="URC">Universal Robina (URC)</option>
+                    <option value="AEV">Aboitiz Equity (AEV)</option>
+                    <option value="AGI">Alliance Global (AGI)</option>
+                    <option value="DMCI">DMCI Holdings (DMCI)</option>
+                    <option value="MONDE">Monde Nissin (MONDE)</option>
+                    <option value="CNVRG">Converge ICT (CNVRG)</option>
+                    <option value="SCC">Semirara Mining (SCC)</option>
+                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
                 </select>
             </div>
         </div>
@@ -260,7 +268,6 @@
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
     </div>
 
-    <!-- TAB 2: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
         <div class="status-card orange">
@@ -273,29 +280,21 @@
         </div>
     </div>
 
-    <!-- TAB 3: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div class="section-title">AI Candlestick Sign Engine</div>
         <div id="candle-card-color" class="status-card red">
             <div class="card-label">Detected Pattern:</div>
             <div id="detected-pattern-name" style="font-size: 1.1rem; font-weight:700; margin: 4px 0 8px 0;">ANALYZING...</div>
-            <div>
-                <span style="font-size: 0.75rem; font-weight:700; color:#fff;">MARKET BIAS:</span>
-                <span id="market-bias-badge" class="indicator-pill pill-down">WAITING</span>
-            </div>
         </div>
     </div>
 
-    <!-- TAB 4: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title">Account Metrics Engine</div>
         <div class="grid-2x2">
             <div class="stat-card w-green"><div class="stat-label">Win Rate</div><div class="stat-value">71.2%</div></div>
-            <div class="stat-card w-green"><div class="stat-label">Net Profit</div><div class="stat-value">₱18,250.00</div></div>
         </div>
     </div>
 
-    <!-- TAB 5: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div id="history-container"></div>
@@ -307,7 +306,6 @@
         let liveRefreshInterval = null;
         let exportedDataDatabase = []; 
 
-        // PINALAWAK NA MARKET MATRIX (20 TICKERS NA MAY SIMULATED BASE PRICES AT VOLATILITY)
         const historicalMarketDatabase = {
             "MER": { base: 590.00, vol: 0.008 },
             "BDO": { base: 155.20, vol: 0.010 },
@@ -317,7 +315,7 @@
             "AC": { base: 685.00, vol: 0.008 },
             "SMPH": { base: 32.45, vol: 0.010 },
             "JFC": { base: 258.60, vol: 0.009 },
-            "ICT": { base: 350.20, vol: 0.012 }, // Idinagdag si ICT boss!
+            "ICT": { base: 350.20, vol: 0.012 }, 
             "ALI": { base: 29.10, vol: 0.013 },
             "GLO": { base: 1720.00, vol: 0.008 },
             "TEL": { base: 1340.00, vol: 0.009 },
@@ -341,6 +339,7 @@
         function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
+            const strategySymbol = document.getElementById('strategy-mode').value;
 
             const multiplier = (Math.random() - 0.485) * (config.base * config.vol);
             const close = (config.base + multiplier).toFixed(2);
@@ -387,17 +386,20 @@
         }
 
         function processAILogic(symbol, o, h, l, c, currentAction, isBearish, rsiValue) {
+            const strategySymbol = document.getElementById('strategy-mode').value;
             document.getElementById('ai-rsi-text').innerText = `RSI: ${rsiValue.toFixed(2)}`;
             document.getElementById('final-action-text').innerText = currentAction;
             document.getElementById('final-action-box').style.borderColor = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
             document.getElementById('final-action-text').style.color = isBearish ? "var(--accent-orange)" : "var(--accent-green)";
+
+            document.getElementById('detected-pattern-name').innerText = `${symbol} STAGE MATRIX`;
 
             const historyContainer = document.getElementById('history-container');
             if(!historyContainer) return;
             const freshLogHTML = `
                 <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-orange)' : 'var(--accent-green)'}">
                     <div class="log-info">
-                        <h4>${symbol} Matrix Capture</h4>
+                        <h4>${symbol} to ${strategySymbol} Sync</h4>
                         <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${o} | C: ₱${c} | Act: ${currentAction}</p>
                     </div>
                 </div>
