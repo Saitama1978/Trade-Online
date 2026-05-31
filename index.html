@@ -212,7 +212,7 @@
     <div id="view-input" class="tab-view active">
         <div class="section-title">Automated Philippine Market Matrix</div>
         
-        <!-- DROP DOWNS GRID (PAREHAS NA ANG LISTAHAN NG ASSET AT STRATEGY BASE SA REKWEST MO) -->
+        <!-- DROP DOWNS GRID -->
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
             <div class="input-group">
                 <label>Asset</label>
@@ -262,8 +262,8 @@
             </div>
         </div>
 
-        <!-- SAVE BUTTONS -->
-        <button class="btn-action btn-blue" onclick="exportMatrixToJSON()">💾 Save Matrix to JSON (Offline Trade)</button>
+        <!-- TEXT EXPORT BUTTON (BINAGO PARA SA OFFLINE .TXT LOG MO) -->
+        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Save Matrix to TXT (Offline Trade)</button>
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
     </div>
 
@@ -313,9 +313,7 @@
     <!-- TAB 5: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
-        <div id="history-container">
-            <!-- Dito papasok ang auto logs -->
-        </div>
+        <div id="history-container"></div>
     </div>
 
     <footer>Developed by: Renante Fullo</footer>
@@ -390,19 +388,16 @@
             const isBearish = parseFloat(close) < parseFloat(open);
             const currentAction = isBearish ? "HOLD / MONITOR" : "CONFIRMED MARKET BUY";
 
-            // Nilagay na rin ang Strategy dynamic asset name para sa offline json file mo
             lastCalculatedData = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-GB'),
                 mode: isBearish ? "SHORT" : "LONG",
-                open: parseFloat(open),
-                high: parseFloat(high),
-                low: parseFloat(low),
-                close: parseFloat(close),
-                rsi: isBearish ? 39.40 : 61.80,
+                open: open,
+                high: high,
+                low: low,
+                close: close,
                 strategy: stratMode,
-                action: currentAction,
-                outcome: "PENDING"
+                action: currentAction
             };
 
             processAILogic(symbol, open, high, low, close, currentAction, isBearish);
@@ -457,16 +452,28 @@
             if (historyContainer.children.length > 5) historyContainer.removeChild(historyContainer.lastChild);
         }
 
-        function exportMatrixToJSON() {
+        // BAGONG TEXT EXPORT FUNCTION (Commas at plain values para madaling ma-import sa offline script mo)
+        function exportMatrixToTXT() {
             if (!lastCalculatedData.company) {
                 alert("Wait lang boss, naglo-load pa ang data.");
                 return;
             }
-            const dataToSave = [lastCalculatedData];
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave, null, 2));
+            
+            // Format ng bawat linya para sa .txt file mo
+            let txtContent = `COMPANY=${lastCalculatedData.company}\n` +
+                             `STRATEGY=${lastCalculatedData.strategy}\n` +
+                             `OPEN=${lastCalculatedData.open}\n` +
+                             `HIGH=${lastCalculatedData.high}\n` +
+                             `LOW=${lastCalculatedData.low}\n` +
+                             `CLOSE=${lastCalculatedData.close}\n` +
+                             `MODE=${lastCalculatedData.mode}\n` +
+                             `ACTION=${lastCalculatedData.action}\n` +
+                             `DATE=${lastCalculatedData.date}`;
+
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `offline_trade_${lastCalculatedData.company}.json`);
+            downloadAnchor.setAttribute("download", `offline_trade_${lastCalculatedData.company}.txt`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
