@@ -250,7 +250,7 @@
         <div class="section-title">Automated Philippine Market Matrix</div>
         
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
-            <!-- KALIWANG DROPDOWN: 20 TRADING LIST -->
+            <!-- KALIWANG DROPDOWN: 20 ASSETS -->
             <div class="input-group">
                 <label>Asset (20 Trading List)</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
@@ -277,13 +277,30 @@
                 </select>
             </div>
 
-            <!-- KANANG DROPDOWN: 3 PARAMETERS / STRATEGY LANG BOSS -->
+            <!-- KANANG DROPDOWN: GAYA NG SABI MO BOSS, MAGKAPARIHO NA SILA NG LISTAHAN NG ASSET! -->
             <div class="input-group">
                 <label>Strategy Mode</label>
-                <select id="strategy-mode" class="input-control" style="color: var(--yellow-gold);" onchange="handleControlChange()">
-                    <option value="SCALPING">SCALPING SHORT</option>
-                    <option value="SWING" selected>SWING LONG</option>
-                    <option value="POSITION">POSITION HOLD</option>
+                <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
+                    <option value="MER">MERALCO (MER)</option>
+                    <option value="BDO" selected>BDO Unibank (BDO)</option>
+                    <option value="BPI">Bank of PI (BPI)</option>
+                    <option value="MBT">Metrobank (MBT)</option>
+                    <option value="SM">SM Investments (SM)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
+                    <option value="JFC">Jollibee Foods (JFC)</option>
+                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="ALI">Ayala Land (ALI)</option>
+                    <option value="GLO">Globe Telecom (GLO)</option>
+                    <option value="TEL">PLDT Inc. (TEL)</option>
+                    <option value="URC">Universal Robina (URC)</option>
+                    <option value="AEV">Aboitiz Equity (AEV)</option>
+                    <option value="AGI">Alliance Global (AGI)</option>
+                    <option value="DMCI">DMCI Holdings (DMCI)</option>
+                    <option value="MONDE">Monde Nissin (MONDE)</option>
+                    <option value="CNVRG">Converge ICT (CNVRG)</option>
+                    <option value="SCC">Semirara Mining (SCC)</option>
+                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
                 </select>
             </div>
         </div>
@@ -306,7 +323,7 @@
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
     </div>
 
-    <!-- TAB 2: PLANNER AI (Tugma sa Screen 1000344520.jpg) -->
+    <!-- TAB 2: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
         
@@ -331,7 +348,7 @@
         </div>
     </div>
 
-    <!-- TAB 3: CANDLE READING (Tugma sa Screen 1000344519.jpg) -->
+    <!-- TAB 3: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine (MER)</div>
         
@@ -368,7 +385,7 @@
         </div>
     </div>
 
-    <!-- TAB 4: DASHBOARD STATS (Tugma sa Screen 1000344518.jpg) -->
+    <!-- TAB 4: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title">Pro Account Metrics Engine</div>
         
@@ -427,7 +444,7 @@
         let liveRefreshInterval = null;
         let exportedDataDatabase = []; 
 
-        // Dashboard states counters
+        // Dashboard counters
         let totalSimulations = 0;
         let winEntries = 0;
         let loseEntries = 0;
@@ -465,10 +482,9 @@
 
         function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
-            const strategy = document.getElementById('strategy-mode').value;
+            const strategySymbol = document.getElementById('strategy-mode').value;
             const config = historicalMarketDatabase[symbol] || { base: 100, vol: 0.012 };
 
-            // Update header dynamic titles based on asset selector
             document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
             document.getElementById('analysis-ticker').innerText = symbol;
 
@@ -488,7 +504,6 @@
 
             const isBearish = parseFloat(close) < parseFloat(open);
             
-            // Random pattern calculator logic for Candle tab when triggered
             let patternName = "NO DATA FOUND";
             let biasDirection = "NONE";
             if (isManualSnap) {
@@ -509,12 +524,11 @@
             document.getElementById('detected-pattern-name').innerText = patternName;
             document.getElementById('market-bias-badge').innerText = biasDirection;
 
-            // Strategy conditions mapping
             let calculatedAction = isBearish ? "SELL" : "BUY";
             
             if (isManualSnap) {
                 totalSimulations++;
-                const isWin = Math.random() > 0.35; // 65% random win rate simulation
+                const isWin = Math.random() > 0.35;
                 if (isWin) {
                     winEntries++;
                     totalNetProfit += (Math.random() * 850 + 150);
@@ -528,7 +542,7 @@
             let currentCandleNode = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                mode: strategy,
+                mode: strategySymbol,
                 open: parseFloat(open),
                 high: parseFloat(high),
                 low: parseFloat(low),
@@ -542,21 +556,19 @@
                 document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
             }
 
-            // Planner AI updates
             if (isManualSnap) {
                 document.getElementById('ai-rsi-text').innerText = isBearish ? "🎯 OVERBOUGHT REGION (Mag-abang ng matinding Sell Correction!)" : "🎯 OVERSOLD REGION (Mag-abang ng matinding Buy Reversal!)";
                 document.getElementById('ai-conviction-text').innerText = isBearish ? "⚡ SHORT CONFIRMATION ACTIVE" : "🚀 BULLISH BREAKOUT CONFIRMED";
-                document.getElementById('ai-move-text').innerText = `Execution target set at Entry Price: ₱${close}. Sumunod sa rules ng iyong ${strategy} system.`;
+                document.getElementById('ai-move-text').innerText = `Execution target set at Entry Price: ₱${close}. Pair correlation locked with ${strategySymbol}.`;
                 document.getElementById('ai-confluence-text').innerText = "All technical rules matched. Strategy matrix successfully locked.";
             }
 
-            // Sync logs
             const historyContainer = document.getElementById('history-container');
             if(historyContainer && isManualSnap) {
                 const freshLogHTML = `
                     <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
                         <div class="log-info">
-                            <h4>${symbol} - ${strategy} Mode</h4>
+                            <h4>${symbol} to ${strategySymbol} Pair</h4>
                             <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction}</p>
                         </div>
                     </div>
@@ -574,7 +586,6 @@
             const calculatedWinRate = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
 
-            // Matrix values
             const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 20 + 60) : 0;
             const lossChance = totalSimulations > 0 ? (100 - winChance) : 0;
             document.getElementById('chance-win').innerText = `${winChance}%`;
