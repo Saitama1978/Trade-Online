@@ -202,8 +202,9 @@
         
         <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
             <div class="input-group">
-                <label>Asset</label>
+                <label>Asset (20 Trading List)</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
+                    <!-- LISTAHAN NG 20 TRADING STOCKS KASAMA SI ICT -->
                     <option value="MER" selected>MERALCO (MER)</option>
                     <option value="BDO">BDO Unibank (BDO)</option>
                     <option value="BPI">Bank of PI (BPI)</option>
@@ -212,6 +213,18 @@
                     <option value="AC">Ayala Corp (AC)</option>
                     <option value="SMPH">SM Prime (SMPH)</option>
                     <option value="JFC">Jollibee Foods (JFC)</option>
+                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="ALI">Ayala Land (ALI)</option>
+                    <option value="GLO">Globe Telecom (GLO)</option>
+                    <option value="TEL">PLDT Inc. (TEL)</option>
+                    <option value="URC">Universal Robina (URC)</option>
+                    <option value="AEV">Aboitiz Equity (AEV)</option>
+                    <option value="AGI">Alliance Global (AGI)</option>
+                    <option value="DMCI">DMCI Holdings (DMCI)</option>
+                    <option value="MONDE">Monde Nissin (MONDE)</option>
+                    <option value="CNVRG">Converge ICT (CNVRG)</option>
+                    <option value="SCC">Semirara Mining (SCC)</option>
+                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
                 </select>
             </div>
 
@@ -292,10 +305,9 @@
 
     <script>
         let liveRefreshInterval = null;
-        
-        // PANGHAWAK NG LAHAT NG NA-GENERATE NA DATA ROWS PARANG SA TEXT FILE MO!
         let exportedDataDatabase = []; 
 
+        // PINALAWAK NA MARKET MATRIX (20 TICKERS NA MAY SIMULATED BASE PRICES AT VOLATILITY)
         const historicalMarketDatabase = {
             "MER": { base: 590.00, vol: 0.008 },
             "BDO": { base: 155.20, vol: 0.010 },
@@ -304,7 +316,19 @@
             "SM": { base: 942.00, vol: 0.007 },
             "AC": { base: 685.00, vol: 0.008 },
             "SMPH": { base: 32.45, vol: 0.010 },
-            "JFC": { base: 258.60, vol: 0.009 }
+            "JFC": { base: 258.60, vol: 0.009 },
+            "ICT": { base: 350.20, vol: 0.012 }, // Idinagdag si ICT boss!
+            "ALI": { base: 29.10, vol: 0.013 },
+            "GLO": { base: 1720.00, vol: 0.008 },
+            "TEL": { base: 1340.00, vol: 0.009 },
+            "URC": { base: 96.50, vol: 0.011 },
+            "AEV": { base: 36.20, vol: 0.010 },
+            "AGI": { base: 9.80, vol: 0.014 },
+            "DMCI": { base: 11.30, vol: 0.012 },
+            "MONDE": { base: 10.10, vol: 0.015 },
+            "CNVRG": { base: 15.40, vol: 0.016 },
+            "SCC": { base: 31.80, vol: 0.013 },
+            "PGOLD": { base: 32.15, vol: 0.011 }
         };
 
         function switchTab(buttonElement, tabId) {
@@ -338,7 +362,6 @@
             const generatedEMA = (parseFloat(close) * 1.01).toFixed(5);
             const generatedSize = (Math.random() * 150 + 10).toFixed(14);
 
-            // GUMAWA NG BAGONG ROW ENTRY
             let currentCandleNode = {
                 company: symbol,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -355,7 +378,6 @@
                 size: parseFloat(generatedSize)
             };
 
-            // KAPAG NG-CLICK O KADA TICK, IDADAGDAG SA PINAKATAAS NG LISTAHAN
             if(isManualSnap || exportedDataDatabase.length === 0 || Math.random() > 0.7) {
                 exportedDataDatabase.unshift(currentCandleNode);
                 document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
@@ -384,7 +406,6 @@
             if (historyContainer.children.length > 8) historyContainer.removeChild(historyContainer.lastChild);
         }
 
-        // EXPORT ENGINE: NGAYON BUONG ARRAY LIST NA ANG LALABAS NA TXT FILE!
         function exportMatrixToTXT() {
             if (exportedDataDatabase.length === 0) {
                 alert("Sandali lang boss, walang laman ang listahan.");
@@ -392,7 +413,6 @@
             }
             
             const symbol = document.getElementById('asset-selector').value;
-            // Dito json array string ang ibababa natin sa device mo para basang-basa ng code loader mo
             let txtContent = JSON.stringify(exportedDataDatabase);
 
             const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
@@ -405,13 +425,13 @@
         }
 
         function handleControlChange() {
-            exportedDataDatabase = []; // I-clear ang list kapag lumipat ng ibang asset
+            exportedDataDatabase = []; 
             document.getElementById('saved-nodes-count').innerText = "0";
             fetchLiveMarketData(true);
         }
 
         function triggerManualCalculation() {
-            fetchLiveMarketData(true); // Sapilitang magdagdag ng panibagong row sa bawat click ng user
+            fetchLiveMarketData(true); 
         }
 
         function deployPSEAutomationSuite() {
