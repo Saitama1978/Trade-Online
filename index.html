@@ -262,7 +262,7 @@
             </div>
         </div>
 
-        <!-- TEXT EXPORT BUTTON (BINAGO PARA SA OFFLINE .TXT LOG MO) -->
+        <!-- UPDATED BUTTON FOR ARRAY TXT FORMAT -->
         <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Save Matrix to TXT (Offline Trade)</button>
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">Recalculate Matrix Now</button>
     </div>
@@ -323,7 +323,7 @@
         let lastCalculatedData = {}; 
 
         const historicalMarketDatabase = {
-            "MER": { base: 395.00, vol: 0.008 },
+            "MER": { base: 590.00, vol: 0.008 },
             "BDO": { base: 155.20, vol: 0.010 },
             "BPI": { base: 121.50, vol: 0.009 },
             "MBT": { base: 68.40, vol: 0.011 },
@@ -386,24 +386,33 @@
             document.getElementById('auto-status-text').innerText = "Live automated trade matrix actively syncing...";
 
             const isBearish = parseFloat(close) < parseFloat(open);
-            const currentAction = isBearish ? "HOLD / MONITOR" : "CONFIRMED MARKET BUY";
+            // Inayon sa format mo: SELL SIGNAL o BUY SIGNAL / WAITING
+            const currentAction = isBearish ? "SELL SIGNAL" : "BUY SIGNAL";
+            const generatedRSI = isBearish ? 69.47 : 33.06;
+            const generatedEMA = (parseFloat(close) * 1.01).toFixed(2);
+            const generatedSize = (Math.random() * 150 + 10).toFixed(2);
 
+            // GUMAWA NG FORMAT NA TUGMA SA ARRAY SYSTEM MO
             lastCalculatedData = {
                 company: symbol,
-                date: new Date().toLocaleDateString('en-GB'),
-                mode: isBearish ? "SHORT" : "LONG",
-                open: open,
-                high: high,
-                low: low,
-                close: close,
-                strategy: stratMode,
-                action: currentAction
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                mode: "LONG",
+                open: parseFloat(open),
+                high: parseFloat(high),
+                low: parseFloat(low),
+                close: parseFloat(close),
+                rsi: generatedRSI,
+                ema: parseFloat(generatedEMA),
+                action: currentAction,
+                outcome: "PENDING",
+                pnl: 0.0,
+                size: parseFloat(generatedSize)
             };
 
-            processAILogic(symbol, open, high, low, close, currentAction, isBearish);
+            processAILogic(symbol, open, high, low, close, currentAction, isBearish, generatedRSI);
         }
 
-        function processAILogic(symbol, o, h, l, c, currentAction, isBearish) {
+        function processAILogic(symbol, o, h, l, c, currentAction, isBearish, rsiValue) {
             const stratMode = document.getElementById('strategy-mode').value;
             const patternName = document.getElementById('detected-pattern-name');
             const biasBadge = document.getElementById('market-bias-badge');
@@ -411,14 +420,14 @@
             const candleCard = document.getElementById('candle-card-color');
 
             if (isBearish) {
-                patternName.innerText = `${stratMode} LIQUIDITY DRAIN`;
+                patternName.innerText = `${symbol} ${currentAction}`;
                 patternName.style.color = "var(--accent-red)";
                 biasBadge.innerText = "BEARISH REJECTION";
                 biasBadge.className = "indicator-pill pill-down";
                 if(candleCard) candleCard.style.borderColor = "var(--accent-red)";
                 explanation.innerText = `May distribution phase sa matrix ng ${symbol}. Hayaang maubos ang supply.`;
             } else {
-                patternName.innerText = `${stratMode} BULK DISPLACEMENT`;
+                patternName.innerText = `${symbol} ${currentAction}`;
                 patternName.style.color = "var(--accent-green)";
                 biasBadge.innerText = "BULLISH EXPANSION";
                 biasBadge.className = "indicator-pill";
@@ -428,7 +437,7 @@
                 explanation.innerText = `Napasok ng institutional orders ang profile ng ${symbol}.`;
             }
 
-            document.getElementById('ai-rsi-text').innerText = isBearish ? `RSI: 39.40` : `RSI: 61.80`;
+            document.getElementById('ai-rsi-text').innerText = `RSI: ${rsiValue}`;
             document.getElementById('ai-conviction-text').innerText = `[${stratMode}] MODE SYNC`;
             document.getElementById('ai-move-text').innerText = `Target Zone calculated for ${symbol}.`;
 
@@ -452,23 +461,16 @@
             if (historyContainer.children.length > 5) historyContainer.removeChild(historyContainer.lastChild);
         }
 
-        // BAGONG TEXT EXPORT FUNCTION (Commas at plain values para madaling ma-import sa offline script mo)
+        // BAGONG EXPORT: KINUKULONG SA [ ] ARRAYS KAHIT NAKA .TXT FILE SIYA
         function exportMatrixToTXT() {
             if (!lastCalculatedData.company) {
                 alert("Wait lang boss, naglo-load pa ang data.");
                 return;
             }
             
-            // Format ng bawat linya para sa .txt file mo
-            let txtContent = `COMPANY=${lastCalculatedData.company}\n` +
-                             `STRATEGY=${lastCalculatedData.strategy}\n` +
-                             `OPEN=${lastCalculatedData.open}\n` +
-                             `HIGH=${lastCalculatedData.high}\n` +
-                             `LOW=${lastCalculatedData.low}\n` +
-                             `CLOSE=${lastCalculatedData.close}\n` +
-                             `MODE=${lastCalculatedData.mode}\n` +
-                             `ACTION=${lastCalculatedData.action}\n` +
-                             `DATE=${lastCalculatedData.date}`;
+            // Ibinabalot sa array para pumasok sa database ng offline tool mo
+            let finalArrayFormat = [lastCalculatedData];
+            let txtContent = JSON.stringify(finalArrayFormat);
 
             const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
             const downloadAnchor = document.createElement('a');
