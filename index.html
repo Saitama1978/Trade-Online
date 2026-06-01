@@ -258,7 +258,7 @@
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱155.21</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱---.--</span>
         </div>
     </div>
 
@@ -272,7 +272,6 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
-    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
         <div class="toggle-row">
             <button id="mode-day" class="toggle-btn active" onclick="setTradingMode('DAY')">Day Trading Mode</button>
@@ -295,7 +294,7 @@
                     <option value="ALI">Ayala Land (ALI)</option>
                 </select>
             </div>
-            <button class="input-control" style="background-color: #232438; color: var(--accent-purple); font-weight:700; height:45px;" onclick="alert('Time Synchronized with PSE Board.')">SET TIME</button>
+            <button class="input-control" style="background-color: #232438; color: var(--accent-purple); font-weight:700; height:45px;" onclick="fetchLiveMarketData(false)">REFRESH</button>
         </div>
 
         <div class="grid-2x2">
@@ -317,7 +316,6 @@
         <div class="reset-link" onclick="resetInputBoard()">Reset Input Board Fields</div>
     </div>
 
-    <!-- TAB 2: CANDLE CHART -->
     <div id="view-candle-chart" class="tab-view">
         <div class="section-title" style="color: var(--cyan-blue);">📊 Auto-Saved Candlestick Feed</div>
         
@@ -339,7 +337,6 @@
         </div>
     </div>
 
-    <!-- TAB 3: RISK MANAGEMENT -->
     <div id="view-risk" class="tab-view">
         <div class="risk-title">Risk Management & RRR Setup</div>
         
@@ -357,11 +354,11 @@
         <div class="grid-2x2">
             <div class="input-group">
                 <label>Target Stop Loss (₱)</label>
-                <input type="number" id="risk-sl-price" class="input-control" value="150" oninput="calculateRiskMetrics()">
+                <input type="number" id="risk-sl-price" class="input-control" value="110" oninput="calculateRiskMetrics()">
             </div>
             <div class="input-group">
                 <label>Target Take Profit (₱)</label>
-                <input type="number" id="risk-tp-price" class="input-control" value="165" oninput="calculateRiskMetrics()">
+                <input type="number" id="risk-tp-price" class="input-control" value="125" oninput="calculateRiskMetrics()">
             </div>
         </div>
 
@@ -388,7 +385,6 @@
         <button class="btn-action btn-green" onclick="alert('Risk Metrics Loaded to Core Memory!')">Lock Risk Parameters</button>
     </div>
 
-    <!-- TAB 4: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner</div>
         <div class="status-card orange">
@@ -401,7 +397,6 @@
         </div>
     </div>
 
-    <!-- TAB 5: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div id="candle-engine-title" class="section-title">Candle Sign Engine</div>
         <div class="status-card teal">
@@ -414,7 +409,6 @@
         </div>
     </div>
 
-    <!-- TAB 6: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title" style="color:#fff; font-size:0.85rem; margin-bottom:15px;">Pro Account Metrics Engine</div>
         
@@ -463,7 +457,6 @@
         <button class="btn-action btn-red" onclick="masterClearAllData()">🗑️ Clear All Dashboard & History</button>
     </div>
 
-    <!-- TAB 7: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div style="background-color: var(--card-bg); border-radius: 8px; padding: 10px; overflow-x: auto;">
@@ -513,15 +506,15 @@
             document.getElementById('out-pending').classList.toggle('active', outcome === 'PENDING');
         }
 
-        // RISK MANAGEMENT LOGIC WITH DYNAMIC RRR INDICATOR
+        // DYNAMIC RISK MANAGEMENT LOGIC
         function calculateRiskMetrics() {
             const balance = parseFloat(document.getElementById('risk-balance').value) || 0;
             const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
             const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 0;
             const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 0;
             
-            // Fixed Live Base for Reference (BDO Reference default)
-            const baseRefPrice = 155.21; 
+            // Kusa nitong kukunin kung magkano ang close price na nasa screen ngayon boss
+            const baseRefPrice = parseFloat(document.getElementById('inp-close').value) || 114.10; 
 
             const maxRiskAmount = (balance * (slippage / 100)).toFixed(2);
             document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRiskAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -535,7 +528,6 @@
                 const rrrBox = document.getElementById('risk-rrr-display');
                 rrrBox.innerText = `1:${ratio}`;
                 
-                // Kulayan ng green kung ligtas ang ratio (1:2 pataas)
                 if (ratio >= 2.0) {
                     rrrBox.style.color = "var(--accent-green)";
                 } else {
@@ -630,64 +622,85 @@
             }
         }
 
+        // INTEGRATED REAL YAHOO FINANCE DATA FEED FOR PSE
         async function fetchLiveMarketData(isManualSnap = false) {
             const selector = document.getElementById('asset-selector');
             if (!selector) return;
             const symbol = selector.value; 
 
-            const basePrices = { 
-                "MER": 590.00, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, "SM": 942.00, 
-                "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, "ICT": 350.00, "ALI": 29.00
-            };
+            document.getElementById('live-asset-price').innerText = "⚡ Loading...";
 
-            const basePrice = basePrices[symbol] || 100;
-            const drift = (Math.random() - 0.5) * (basePrice * 0.004);
-            let close = basePrice + drift;
-            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.002);
-            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.003));
-            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.003));
-
-            open = parseFloat(open).toFixed(2); high = parseFloat(high).toFixed(2);
-            low = parseFloat(low).toFixed(2); close = parseFloat(close).toFixed(2);
-
-            document.getElementById('inp-open').value = open;
-            document.getElementById('inp-high').value = high;
-            document.getElementById('inp-low').value = low;
-            document.getElementById('inp-close').value = close;
-
-            document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-            document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-
-            if (isManualSnap) {
-                totalSimulations++;
-                let isWin = Math.random() > 0.4;
-                if (selectedExpectedOutcome === 'WIN') isWin = true;
-                if (selectedExpectedOutcome === 'LOSS') isWin = false;
-
-                let outcomeLabel = isWin ? "WIN" : "LOSS";
-                let changeAmount = isWin ? (Math.random() * (basePrice * 0.05) + 10) : -(Math.random() * (basePrice * 0.03) + 5);
+            try {
+                const ticker = `${symbol}.PS`;
+                const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 
-                if(isWin) { winEntries++; } else { loseEntries++; }
-                totalNetProfit += changeAmount;
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
                 
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-                historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
+                const result = data.chart.result[0];
+                const meta = result.meta;
+                const quote = result.indicators.quote[0];
                 
-                snappedCandlesList.push({
-                    open: parseFloat(open), high: parseFloat(high),
-                    low: parseFloat(low), close: parseFloat(close), outcome: outcomeLabel
-                });
+                let close = meta.regularMarketPrice;
+                let open = quote.open[0] || close;
+                let high = quote.high[0] || close;
+                let low = quote.low[0] || close;
 
-                exportedDataDatabase.unshift({ company: symbol, close });
-                
-                updateDashboardUI();
-                renderCandlesticks();
-                rebuildHistoryTableUI();
-                saveDataToInternalStorage();
+                open = parseFloat(open).toFixed(2); 
+                high = parseFloat(high).toFixed(2);
+                low = parseFloat(low).toFixed(2); 
+                close = parseFloat(close).toFixed(2);
 
-                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                document.getElementById('inp-open').value = open;
+                document.getElementById('inp-high').value = high;
+                document.getElementById('inp-low').value = low;
+                document.getElementById('inp-close').value = close;
+
+                document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
+                document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+                // Recalculate parameters automatically when fresh data lands
+                calculateRiskMetrics();
+
+                if (isManualSnap) {
+                    totalSimulations++;
+                    let isWin = Math.random() > 0.4;
+                    if (selectedExpectedOutcome === 'WIN') isWin = true;
+                    if (selectedExpectedOutcome === 'LOSS') isWin = false;
+
+                    let outcomeLabel = isWin ? "WIN" : "LOSS";
+                    let changeAmount = isWin ? (Math.random() * (parseFloat(close) * 0.05) + 10) : -(Math.random() * (parseFloat(close) * 0.03) + 5);
+                    
+                    if(isWin) { winEntries++; } else { loseEntries++; }
+                    totalNetProfit += changeAmount;
+                    
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                    historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
+                    
+                    snappedCandlesList.push({
+                        open: parseFloat(open), high: parseFloat(high),
+                        low: parseFloat(low), close: parseFloat(close), outcome: outcomeLabel
+                    });
+
+                    exportedDataDatabase.unshift({ company: symbol, close });
+                    
+                    updateDashboardUI();
+                    renderCandlesticks();
+                    rebuildHistoryTableUI();
+                    saveDataToInternalStorage();
+
+                    document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                }
+            } catch (error) {
+                console.error("Error pulling financial data feed:", error);
+                document.getElementById('live-asset-price').innerText = "❌ Offline/Error";
+                document.getElementById('inp-open').value = "ERR";
+                document.getElementById('inp-high').value = "ERR";
+                document.getElementById('inp-low').value = "ERR";
+                document.getElementById('inp-close').value = "ERR";
             }
         }
 
@@ -784,7 +797,6 @@
         window.onload = function() { 
             loadDataFromInternalStorage();
             fetchLiveMarketData(false); 
-            calculateRiskMetrics();
         };
     </script>
 </body>
