@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Calculator Pro — PSE Live Auto</title>
+    <title>Trading Calculator Pro — PSE Live Auto-Trade</title>
     <style>
         :root {
             --bg-color: #0c0d14;
@@ -194,9 +194,12 @@
         }
         .btn-action:active { transform: scale(0.95); }
         .btn-green { background-color: var(--accent-green); color: #000; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-        .btn-blue { background-color: var(--accent-blue); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        .btn-purple { background-color: #a855f7; color: #fff; border-radius: 25px; }
+        .btn-blue { background-color: var(--accent-blue); color: #fff; }
         .btn-red { background-color: var(--accent-red); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); margin-top: 15px; }
+
+        .risk-title {
+            font-size: 0.9rem; font-weight: 700; color: var(--cyan-blue); text-transform: uppercase; margin: 20px 0 15px 0; letter-spacing: 0.5px;
+        }
 
         .big-action-box {
             border: 2px solid var(--yellow-gold); border-radius: 8px; padding: 25px; text-align: center; background-color: transparent; margin-top: 10px;
@@ -215,12 +218,27 @@
         .log-win { color: var(--accent-green); font-weight: bold; }
         .log-loss { color: var(--accent-red); font-weight: bold; }
 
-        .runtime-counter {
-            border: 1px dashed var(--border-color); border-radius: 6px; padding: 12px; text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;
+        .reset-link { text-align: center; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin-top: 15px; text-decoration: none; display: block; }
+
+        .chart-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
         }
 
         .save-indicator {
-            text-align: center; font-size: 0.75rem; color: var(--accent-green); margin-top: 5px; font-weight: 600; display: none;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            margin-top: 5px;
+            font-weight: 600;
+            display: none;
         }
 
         footer { text-align: center; padding: 25px 0 10px 0; color: var(--yellow-gold); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
@@ -246,6 +264,7 @@
 
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-candle-chart')">📈 Candle Chart</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-risk')">Risk Management</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-candle')">Candle Reading</button>
@@ -253,69 +272,97 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
+    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
-        <div style="font-size: 0.85rem; font-weight: bold; color: #d946ef; margin-bottom: 15px; text-transform: uppercase;">Automated Philippine Market Matrix</div>
-        
         <div class="toggle-row">
             <button id="mode-day" class="toggle-btn active" onclick="setTradingMode('DAY')">Day Trading Mode</button>
             <button id="mode-long" class="toggle-btn" onclick="setTradingMode('LONG')">Long Trading Mode</button>
         </div>
 
-        <div class="grid-2x2">
-            <div class="input-group">
-                <label>Asset (20 Trading List)</label>
+        <div class="grid-2x2" style="grid-template-columns: 2fr 1fr; align-items: end; gap: 12px; margin-bottom: 15px;">
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Select PSE Stock</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
                     <option value="BDO" selected>BDO Unibank (BDO)</option>
                     <option value="MER">MERALCO (MER)</option>
                     <option value="BPI">Bank of PI (BPI)</option>
                     <option value="MBT">Metrobank (MBT)</option>
                     <option value="SM">SM Investments (SM)</option>
-                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
                     <option value="JFC">Jollibee Foods (JFC)</option>
+                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="ALI">Ayala Land (ALI)</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>Strategy Selector</label>
-                <select class="input-control">
-                    <option>Candle Bias</option>
-                    <option>RSI Scalping</option>
-                </select>
-            </div>
+            <button class="input-control" style="background-color: #232438; color: var(--accent-purple); font-weight:700; height:45px;" onclick="alert('Time Synchronized with PSE Board.')">SET TIME</button>
         </div>
 
         <div class="grid-2x2">
-            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly></div>
-            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly></div>
-            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly></div>
-            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly></div>
+            <div class="input-group"><label>Open Price</label><input type="text" id="inp-open" class="input-control" readonly></div>
+            <div class="input-group"><label>High Price</label><input type="text" id="inp-high" class="input-control" readonly></div>
+            <div class="input-group"><label>Low Price</label><input type="text" id="inp-low" class="input-control" readonly></div>
+            <div class="input-group"><label>Close Price</label><input type="text" id="inp-close" class="input-control" readonly></div>
         </div>
 
-        <div class="runtime-counter">
-            📊 Accumulated Array Data: <span id="saved-nodes-count" style="color:var(--yellow-gold); font-weight:bold;">0</span> rows ready to export
+        <div style="border-top: 1px solid var(--border-color); margin-top:20px; padding-top:10px;">
+            <div class="card-label">Accumulated Array Data Count</div>
+            <div style="color:var(--yellow-gold); font-size:0.9rem; font-weight:bold; margin-bottom:15px;">
+                📊 <span id="saved-nodes-count">0</span> rows auto-saved in internal storage
+            </div>
         </div>
 
-        <div class="input-group">
-            <label style="color: #a855f7;">Github Personal Access Token</label>
-            <input type="password" class="input-control" placeholder="I-paste ang github_pat_ dito...">
-        </div>
-
-        <button class="btn-action btn-purple" onclick="alert('Executing Automated Workflow via Github Actions Bot...')">🚀 Execute Bot via Github Actions</button>
-        <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
-        <button class="btn-action btn-blue" onclick="exportHistoryToTxt()">💾 Export Full History to TXT</button>
-        
-        <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:15px; cursor:pointer;" onclick="resetInputBoard()">Reset Input Board</div>
+        <button id="snap-btn" class="btn-action btn-green" onclick="triggerManualCalculation(this)">⚡ Snap Current Candle to List</button>
+        <div id="save-status-msg" class="save-indicator">✓ Data Secured Intraday Memory</div>
+        <div class="reset-link" onclick="resetInputBoard()">Reset Input Board Fields</div>
     </div>
 
+    <!-- TAB 2: CANDLE CHART -->
+    <div id="view-candle-chart" class="tab-view">
+        <div class="section-title" style="color: var(--cyan-blue);">📊 Auto-Saved Candlestick Feed</div>
+        
+        <div class="chart-box">
+            <svg id="candle-svg-canvas" width="100%" height="200" style="background-color: #0f1016; border-radius: 6px;">
+                <line x1="0" y1="50" x2="100%" y2="50" stroke="#1f2232" stroke-dasharray="4"/>
+                <line x1="0" y1="100" x2="100%" y2="100" stroke="#1f2232" stroke-dasharray="4"/>
+                <line x1="0" y1="150" x2="100%" y2="150" stroke="#1f2232" stroke-dasharray="4"/>
+                <g id="dynamic-candles-group"></g>
+                <text id="chart-empty-notice" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--text-muted)" font-size="12">Mag-snap ng candle para mag-drawing dito.</text>
+            </svg>
+        </div>
+
+        <div class="status-card teal">
+            <div class="card-label">🔒 Internal Memory Protection Active:</div>
+            <div class="card-value" style="font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+                Ligtas ang iyong oras-oras na pag-plot, boss! Kahit mag-restart ang cellphone o PC, awtomatikong kukunin ng system ang huling sinave mong takbo ng mga kandila.
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: RISK MANAGEMENT -->
     <div id="view-risk" class="tab-view">
-        <div style="font-size: 0.85rem; font-weight: bold; color: var(--cyan-blue); margin-bottom: 15px; text-transform: uppercase;">Risk Management & RRR Setup</div>
+        <div class="risk-title">Risk Management & RRR Setup</div>
         
         <div class="grid-2x2">
-            <div class="input-group"><label>Account Balance (₱)</label><input type="number" id="risk-balance" class="input-control" value="6000" oninput="calculateRiskMetrics()"></div>
-            <div class="input-group"><label>Risk Slippage (%)</label><input type="number" id="risk-slippage" class="input-control" value="1" oninput="calculateRiskMetrics()"></div>
+            <div class="input-group">
+                <label>Account Balance (₱)</label>
+                <input type="number" id="risk-balance" class="input-control" value="6000" oninput="calculateRiskMetrics()">
+            </div>
+            <div class="input-group">
+                <label>Risk Slippage (%)</label>
+                <input type="number" id="risk-slippage" class="input-control" value="1" step="0.1" oninput="calculateRiskMetrics()">
+            </div>
         </div>
+
         <div class="grid-2x2">
-            <div class="input-group"><label>Target Stop Loss (₱)</label><input type="number" id="risk-sl-price" class="input-control" value="150" oninput="calculateRiskMetrics()"></div>
-            <div class="input-group"><label>Target Take Profit (₱)</label><input type="number" id="risk-tp-price" class="input-control" value="165" oninput="calculateRiskMetrics()"></div>
+            <div class="input-group">
+                <label>Target Stop Loss (₱)</label>
+                <input type="number" id="risk-sl-price" class="input-control" value="150" oninput="calculateRiskMetrics()">
+            </div>
+            <div class="input-group">
+                <label>Target Take Profit (₱)</label>
+                <input type="number" id="risk-tp-price" class="input-control" value="165" oninput="calculateRiskMetrics()">
+            </div>
         </div>
 
         <div class="input-group">
@@ -328,39 +375,74 @@
         </div>
 
         <div class="grid-2x2" style="margin-top:15px;">
-            <div class="status-card teal" style="margin-bottom:0;"><div class="card-label">Max Allowed Risk</div><div id="risk-allocation-display" class="card-value" style="color:var(--accent-green); font-weight:bold;">₱60.00</div></div>
-            <div class="status-card orange" style="margin-bottom:0;"><div class="card-label">Risk-to-Reward Ratio</div><div id="risk-rrr-display" class="card-value" style="color:var(--yellow-gold); font-weight:bold;">1:1.9</div></div>
+            <div class="status-card teal" style="margin-bottom:0;">
+                <div class="card-label">Max Allowed Risk</div>
+                <div id="risk-allocation-display" class="card-value" style="font-size:1.1rem; color:var(--accent-green); font-weight:bold;">₱60.00</div>
+            </div>
+            <div class="status-card orange" style="margin-bottom:0;" id="rrr-card-box">
+                <div class="card-label">Risk-to-Reward Ratio</div>
+                <div id="risk-rrr-display" class="card-value" style="font-size:1.1rem; color:var(--yellow-gold); font-weight:bold;">1:2.0</div>
+            </div>
         </div>
-        <button class="btn-action btn-green" style="margin-top:20px;" onclick="alert('Risk metrics locked inside core module!')">Lock Risk Parameters</button>
+
+        <button class="btn-action btn-green" onclick="alert('Risk Metrics Loaded to Core Memory!')">Lock Risk Parameters</button>
     </div>
 
+    <!-- TAB 4: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner</div>
         <div class="status-card orange">
-            <div class="card-label">RSI Readout (Standard 14 Period)</div>
-            <div id="ai-rsi-text" class="card-value" style="font-weight: 700; color: var(--text-muted);">Waiting for 14 Candlesticks...</div>
+            <div class="card-label">RSI Readout</div>
+            <div id="ai-rsi-text" class="card-value" style="font-weight: 700; color: var(--yellow-gold);">Calculating...</div>
         </div>
         <div class="status-card blue">
             <div class="card-label">Strategy Setup</div>
-            <div id="ai-strategy-status" class="card-value">Active Core Market Flow Alignment.</div>
+            <div class="card-value">Active Core Market Flow Alignment.</div>
         </div>
     </div>
 
+    <!-- TAB 5: CANDLE READING -->
     <div id="view-candle" class="tab-view">
-        <div class="section-title">Candle Sign Engine</div>
-        <div class="status-card teal"><div class="card-label">Detected Pattern:</div><div id="detected-pattern-name" class="card-value" style="font-weight:700;">READING...</div></div>
-        <div class="status-card orange"><div class="card-label">Bias Direction:</div><div id="market-bias-badge" class="card-value" style="font-weight:700; color:var(--accent-orange);">NONE</div></div>
+        <div id="candle-engine-title" class="section-title">Candle Sign Engine</div>
+        <div class="status-card teal">
+            <div class="card-label">Detected Pattern:</div>
+            <div id="detected-pattern-name" class="card-value" style="font-weight:700;">READING...</div>
+        </div>
+        <div class="status-card orange">
+            <div class="card-label">Bias Direction:</div>
+            <div id="market-bias-badge" class="card-value" style="font-weight:700; color:var(--accent-orange);">NONE</div>
+        </div>
     </div>
 
+    <!-- TAB 6: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title" style="color:#fff; font-size:0.85rem; margin-bottom:15px;">Pro Account Metrics Engine</div>
+        
         <div class="grid-2x2">
-            <div class="stat-card w-green"><div class="stat-label">Win Rate Accuracy</div><div id="stat-winrate" class="stat-value">0.0%</div></div>
-            <div class="stat-card w-green" id="profit-card-border"><div class="stat-label">Net Profit / Loss</div><div id="stat-profit" class="stat-value">₱0.00</div></div>
-            <div class="stat-card w-blue"><div class="stat-label">Total Simulations</div><div id="stat-total" class="stat-value">0</div></div>
-            <div class="stat-card w-blue" style="border-left-color: var(--accent-teal);"><div class="stat-label">Win Entries</div><div id="stat-wins" class="stat-value">0</div></div>
+            <div class="stat-card w-green">
+                <div class="stat-label">Win Rate Accuracy</div>
+                <div id="stat-winrate" class="stat-value">0.0%</div>
+            </div>
+            <div class="stat-card w-green" id="profit-card-border">
+                <div class="stat-label">Net Profit / Loss</div>
+                <div id="stat-profit" class="stat-value">₱0.00</div>
+            </div>
+            <div class="stat-card w-blue">
+                <div class="stat-label">Total Simulations</div>
+                <div id="stat-total" class="stat-value">0</div>
+            </div>
+            <div class="stat-card w-blue" style="border-left-color: var(--accent-teal);">
+                <div class="stat-label">Win Entries</div>
+                <div id="stat-wins" class="stat-value">0</div>
+            </div>
         </div>
-        <div class="grid-2x2" style="grid-template-columns: 1fr;"><div class="stat-card" style="border-left-color: var(--accent-orange);"><div class="stat-label">Lose Entries</div><div id="stat-loses" class="stat-value">0</div></div></div>
+
+        <div class="grid-2x2" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="stat-card" style="border-left-color: var(--accent-orange);">
+                <div class="stat-label">Lose Entries</div>
+                <div id="stat-loses" class="stat-value">0</div>
+            </div>
+        </div>
 
         <div class="section-title" style="color:var(--text-muted); font-size:0.75rem; margin-bottom:8px;">Probability Matrix Field</div>
         <div class="status-card red" style="padding: 14px; border-left-width: 4px; margin-bottom: 25px; border-radius:6px;">
@@ -368,22 +450,37 @@
                 <span style="color: var(--accent-green);">CHANCES OF WIN: <span id="chance-win">0%</span></span>
                 <span style="color: var(--accent-red);">CHANCES OF LOSS: <span id="chance-loss">0%</span></span>
             </div>
-            <div style="font-size: 0.75rem; color: var(--yellow-gold); font-weight: 700;">REMARKS: <span id="matrix-remarks">WAITING FOR MARKET TRIGGER</span></div>
+            <div style="font-size: 0.75rem; color: var(--yellow-gold); font-weight: 700;">
+                REMARKS: <span id="matrix-remarks" style="color: var(--yellow-gold);">WAITING FOR MARKET TRIGGER</span>
+            </div>
         </div>
 
         <div class="section-title" style="color:#fff; font-size:0.8rem; margin-bottom:8px;">Final Action Result</div>
-        <div class="big-action-box"><div id="big-action-text" class="big-action-text">WAITING</div></div>
+        <div class="big-action-box">
+            <div id="big-action-text" class="big-action-text">WAITING</div>
+        </div>
 
         <button class="btn-action btn-red" onclick="masterClearAllData()">🗑️ Clear All Dashboard & History</button>
     </div>
 
+    <!-- TAB 7: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div style="background-color: var(--card-bg); border-radius: 8px; padding: 10px; overflow-x: auto;">
             <table class="history-table">
-                <thead><tr><th>Asset</th><th>Price</th><th>Time</th><th>Action</th><th>Outcome</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Price</th>
+                        <th>Time Stamp</th>
+                        <th>Action</th>
+                        <th>Outcome</th>
+                    </tr>
+                </thead>
                 <tbody id="history-table-body">
-                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td></tr>
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -393,13 +490,15 @@
     <footer>Developed by: Renante Fullo</footer>
 
     <script>
+        let exportedDataDatabase = []; 
         let totalSimulations = 0;
         let winEntries = 0;
         let loseEntries = 0;
         let totalNetProfit = 0;
         let selectedTradingMode = 'DAY';
         let selectedExpectedOutcome = 'PENDING';
-        let snappedCandlesList = []; 
+        let snappedCandlesList = [];
+        let historyLogsList = []; 
 
         function setTradingMode(mode) {
             selectedTradingMode = mode;
@@ -414,23 +513,34 @@
             document.getElementById('out-pending').classList.toggle('active', outcome === 'PENDING');
         }
 
+        // RISK MANAGEMENT LOGIC WITH DYNAMIC RRR INDICATOR
         function calculateRiskMetrics() {
             const balance = parseFloat(document.getElementById('risk-balance').value) || 0;
             const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
-            const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 150;
-            const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 165;
+            const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 0;
+            const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 0;
             
-            const livePrice = parseFloat(document.getElementById('inp-close').value) || 155.21;
+            // Fixed Live Base for Reference (BDO Reference default)
+            const baseRefPrice = 155.21; 
 
             const maxRiskAmount = (balance * (slippage / 100)).toFixed(2);
-            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRiskAmount).toLocaleString()}`;
+            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRiskAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-            const lossDistance = Math.abs(livePrice - slPrice);
-            const gainDistance = Math.abs(tpPrice - livePrice);
+            // Compute RRR
+            const potentialLoss = Math.abs(baseRefPrice - slPrice);
+            const potentialGain = Math.abs(tpPrice - baseRefPrice);
             
-            if (lossDistance > 0) {
-                const ratio = (gainDistance / lossDistance).toFixed(1);
-                document.getElementById('risk-rrr-display').innerText = `1:${ratio}`;
+            if (potentialLoss > 0) {
+                const ratio = (potentialGain / potentialLoss).toFixed(1);
+                const rrrBox = document.getElementById('risk-rrr-display');
+                rrrBox.innerText = `1:${ratio}`;
+                
+                // Kulayan ng green kung ligtas ang ratio (1:2 pataas)
+                if (ratio >= 2.0) {
+                    rrrBox.style.color = "var(--accent-green)";
+                } else {
+                    rrrBox.style.color = "var(--accent-orange)";
+                }
             }
         }
 
@@ -439,94 +549,114 @@
             document.getElementById('inp-high').value = "";
             document.getElementById('inp-low').value = "";
             document.getElementById('inp-close').value = "";
-            alert("Board Fields Cleared.");
+            alert("Fields reset complete.");
         }
 
-        // TOTOONG RSI COMPUTATION ALGORITHM
-        function computeStandardRSI() {
-            const rsiDisplay = document.getElementById('ai-rsi-text');
-            const strategyDisplay = document.getElementById('ai-strategy-status');
-            if (!rsiDisplay) return;
+        function saveDataToInternalStorage() {
+            localStorage.setItem('trading_exportedData', JSON.stringify(exportedDataDatabase));
+            localStorage.setItem('trading_candlesList', JSON.stringify(snappedCandlesList));
+            localStorage.setItem('trading_historyLogs', JSON.stringify(historyLogsList));
+            localStorage.setItem('trading_totalSims', totalSimulations);
+            localStorage.setItem('trading_wins', winEntries);
+            localStorage.setItem('trading_loses', loseEntries);
+            localStorage.setItem('trading_profit', totalNetProfit);
 
-            // Kailangan ng 14 periods para gumana ang standard RSI formula
-            if (snappedCandlesList.length < 14) {
-                rsiDisplay.innerText = `Calculating... (Need ${14 - snappedCandlesList.length} more candles)`;
-                rsiDisplay.style.color = "var(--text-muted)";
-                strategyDisplay.innerText = "Gathering baseline momentum data flow...";
-                return;
+            const msg = document.getElementById('save-status-msg');
+            if(msg) {
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 1000);
             }
+        }
 
-            let gains = 0;
-            let losses = 0;
+        function loadDataFromInternalStorage() {
+            if(localStorage.getItem('trading_totalSims')) {
+                exportedDataDatabase = JSON.parse(localStorage.getItem('trading_exportedData')) || [];
+                snappedCandlesList = JSON.parse(localStorage.getItem('trading_candlesList')) || [];
+                historyLogsList = JSON.parse(localStorage.getItem('trading_historyLogs')) || [];
+                totalSimulations = parseInt(localStorage.getItem('trading_totalSims')) || 0;
+                winEntries = parseInt(localStorage.getItem('trading_wins')) || 0;
+                loseEntries = parseInt(localStorage.getItem('trading_loses')) || 0;
+                totalNetProfit = parseFloat(localStorage.getItem('trading_profit')) || 0;
 
-            // Isagawa ang standard mathematical changes formula sa array list
-            for (let i = 1; i < snappedCandlesList.length; i++) {
-                let difference = snappedCandlesList[i].close - snappedCandlesList[i-1].close;
-                if (difference > 0) {
-                    gains += difference;
-                } else {
-                    losses += Math.abs(difference);
-                }
-            }
-
-            let avgGain = gains / 14;
-            let avgLoss = losses / 14;
-
-            if (avgLoss === 0) {
-                rsiDisplay.innerText = "100.0 — Max Overbought Strength";
-                rsiDisplay.style.color = "var(--accent-red)";
-                return;
-            }
-
-            let rs = avgGain / avgLoss;
-            let rsiValue = Math.round(100 - (100 / (1 + rs)));
-
-            // Kulayan ang AI Readout depende sa momentum values
-            if (rsiValue >= 70) {
-                rsiDisplay.innerText = `${rsiValue} — 🔴 OVERBOUGHT (Risky Entry)`;
-                rsiDisplay.style.color = "var(--accent-red)";
-                strategyDisplay.innerText = "ALERT: Exhaustion market peak detected. Recommendation: Short/Sell Bias.";
-            } else if (rsiValue <= 30) {
-                rsiDisplay.innerText = `${rsiValue} — 🟢 OVERSOLD (Potential Reversal Buy)`;
-                rsiDisplay.style.color = "var(--accent-green)";
-                strategyDisplay.innerText = "ALERT: Oversold support compression. Recommendation: Scalp Buy Trigger.";
-            } else {
-                rsiDisplay.innerText = `${rsiValue} — 🟡 NEUTRAL MOMENTUM`;
-                rsiDisplay.style.color = "var(--yellow-gold)";
-                strategyDisplay.innerText = "Market moving in core stable alignment flow.";
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                updateDashboardUI();
+                renderCandlesticks();
+                rebuildHistoryTableUI();
             }
         }
 
         function masterClearAllData() {
-            if (confirm("Sigurado ka boss? Mabubura LAHAT ng auto-save data mo.")) {
-                localStorage.clear();
+            if (confirm("Sigurado ka boss? Mabubura LAHAT ng auto-save data mo sa internal memory ng device na ito.")) {
+                localStorage.clear(); 
+
+                exportedDataDatabase = [];
                 snappedCandlesList = [];
-                totalSimulations = 0; winEntries = 0; loseEntries = 0; totalNetProfit = 0;
-                updateDashboardUI();
-                rebuildHistoryTableUI();
-                computeStandardRSI();
+                historyLogsList = [];
+                totalSimulations = 0;
+                winEntries = 0;
+                loseEntries = 0;
+                totalNetProfit = 0;
+                
+                document.getElementById('stat-total').innerText = "0";
+                document.getElementById('stat-wins').innerText = "0";
+                document.getElementById('stat-loses').innerText = "0";
+                
+                const profitDisplay = document.getElementById('stat-profit');
+                profitDisplay.innerText = "₱0.00";
+                profitDisplay.style.color = "var(--text-main)";
+                document.getElementById('profit-card-border').style.borderLeftColor = "var(--border-color)";
+                
+                document.getElementById('stat-winrate').innerText = "0.0%";
                 document.getElementById('saved-nodes-count').innerText = "0";
-                alert("Storage Purged Clean!");
+                
+                document.getElementById('chance-win').innerText = "0%";
+                document.getElementById('chance-loss').innerText = "0%";
+                document.getElementById('matrix-remarks').innerText = "WAITING FOR MARKET TRIGGER";
+                
+                const actionBox = document.getElementById('big-action-text');
+                actionBox.innerText = "WAITING";
+                actionBox.style.color = "var(--yellow-gold)";
+                
+                document.getElementById('history-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td>
+                    </tr>
+                `;
+                
+                document.getElementById('dynamic-candles-group').innerHTML = "";
+                document.getElementById('chart-empty-notice').style.display = "block";
+                
+                alert("Internal memory storage cleared out completely!");
             }
         }
 
-        function fetchLiveMarketData(isManualSnap = false) {
-            const symbol = document.getElementById('asset-selector').value;
-            const basePrices = { "MER": 590.70, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, "SM": 942.00, "ICT": 350.00, "JFC": 258.00 };
+        async function fetchLiveMarketData(isManualSnap = false) {
+            const selector = document.getElementById('asset-selector');
+            if (!selector) return;
+            const symbol = selector.value; 
+
+            const basePrices = { 
+                "MER": 590.00, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, "SM": 942.00, 
+                "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, "ICT": 350.00, "ALI": 29.00
+            };
 
             const basePrice = basePrices[symbol] || 100;
-            let close = basePrice + (Math.random() - 0.5) * (basePrice * 0.005);
-            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.003);
-            let high = Math.max(open, close) + (Math.random() * 2);
-            let low = Math.min(open, close) - (Math.random() * 2);
+            const drift = (Math.random() - 0.5) * (basePrice * 0.004);
+            let close = basePrice + drift;
+            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.002);
+            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.003));
+            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.003));
 
-            document.getElementById('inp-open').value = open.toFixed(2);
-            document.getElementById('inp-high').value = high.toFixed(2);
-            document.getElementById('inp-low').value = low.toFixed(2);
-            document.getElementById('inp-close').value = close.toFixed(2);
+            open = parseFloat(open).toFixed(2); high = parseFloat(high).toFixed(2);
+            low = parseFloat(low).toFixed(2); close = parseFloat(close).toFixed(2);
+
+            document.getElementById('inp-open').value = open;
+            document.getElementById('inp-high').value = high;
+            document.getElementById('inp-low').value = low;
+            document.getElementById('inp-close').value = close;
 
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-            document.getElementById('live-asset-price').innerText = `₱${close.toFixed(2)}`;
+            document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
             if (isManualSnap) {
                 totalSimulations++;
@@ -535,40 +665,84 @@
                 if (selectedExpectedOutcome === 'LOSS') isWin = false;
 
                 let outcomeLabel = isWin ? "WIN" : "LOSS";
-                let rewardAmount = isWin ? (Math.random() * 25 + 10) : -(Math.random() * 15 + 5);
-
-                if (isWin) winEntries++; else loseEntries++;
-                totalNetProfit += rewardAmount;
-
-                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                let changeAmount = isWin ? (Math.random() * (basePrice * 0.05) + 10) : -(Math.random() * (basePrice * 0.03) + 5);
                 
-                // I-save ang kasaysayan para sa totoong kalkulasyon ng RSI
-                snappedCandlesList.push({ symbol, close: close, outcome: outcomeLabel, time: timeStr });
+                if(isWin) { winEntries++; } else { loseEntries++; }
+                totalNetProfit += changeAmount;
+                
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+                historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
+                
+                snappedCandlesList.push({
+                    open: parseFloat(open), high: parseFloat(high),
+                    low: parseFloat(low), close: parseFloat(close), outcome: outcomeLabel
+                });
+
+                exportedDataDatabase.unshift({ company: symbol, close });
+                
                 updateDashboardUI();
+                renderCandlesticks();
                 rebuildHistoryTableUI();
-                computeStandardRSI(); // Tawagin ang formula
+                saveDataToInternalStorage();
 
-                document.getElementById('saved-nodes-count').innerText = snappedCandlesList.length;
-                localStorage.setItem('local_candles', JSON.stringify(snappedCandlesList));
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
             }
+        }
+
+        function renderCandlesticks() {
+            const group = document.getElementById('dynamic-candles-group');
+            const notice = document.getElementById('chart-empty-notice');
+            if (!group) return;
+
+            if (snappedCandlesList.length > 0) { notice.style.display = "none"; }
+            group.innerHTML = ""; 
+            
+            const maxVisible = 8;
+            const startIdx = Math.max(0, snappedCandlesList.length - maxVisible);
+            const visibleCandles = snappedCandlesList.slice(startIdx);
+            const spacing = 320 / maxVisible;
+
+            visibleCandles.forEach((c, index) => {
+                const xPos = 30 + (index * spacing);
+                const highestPoint = Math.max(...visibleCandles.map(v => v.high));
+                const lowestPoint = Math.min(...visibleCandles.map(v => v.low));
+                const spread = (highestPoint - lowestPoint) || 1;
+
+                function scaleY(val) { return 170 - ((val - lowestPoint) / spread) * 120; }
+
+                const candleColor = c.outcome === "WIN" ? "var(--accent-green)" : "var(--accent-red)";
+                
+                const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                wick.setAttribute("x1", xPos + 10); wick.setAttribute("y1", scaleY(c.high));
+                wick.setAttribute("x2", xPos + 10); wick.setAttribute("y2", scaleY(c.low));
+                wick.setAttribute("stroke", candleColor); wick.setAttribute("stroke-width", "2");
+                group.appendChild(wick);
+
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                body.setAttribute("x", xPos); body.setAttribute("y", Math.min(scaleY(c.open), scaleY(c.close)));
+                body.setAttribute("width", "20"); body.setAttribute("height", Math.max(Math.abs(scaleY(c.open) - scaleY(c.close)), 4));
+                body.setAttribute("fill", candleColor);
+                group.appendChild(body);
+            });
         }
 
         function rebuildHistoryTableUI() {
             const tbody = document.getElementById('history-table-body');
-            if (snappedCandlesList.length === 0) {
+            if (historyLogsList.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td></tr>`;
                 return;
             }
+
             tbody.innerHTML = "";
-            // Baligtarin para ang pinakabago ang nasa itaas
-            [...snappedCandlesList].reverse().forEach(log => {
+            historyLogsList.forEach(log => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td style="font-weight:bold;">${log.symbol}</td>
-                    <td>₱${log.close.toFixed(2)}</td>
+                    <td>₱${parseFloat(log.price).toFixed(2)}</td>
                     <td style="color:var(--yellow-gold); font-weight:700;">⏱️ ${log.time}</td>
-                    <td style="font-weight:bold; color:var(--accent-blue);">MONITOR POSITION</td>
+                    <td style="font-size:0.7rem; color:var(--accent-green); font-weight:bold;">MONITOR RUN</td>
                     <td class="${log.outcome === 'WIN' ? 'log-win' : 'log-loss'}">${log.outcome}</td>
                 `;
                 tbody.appendChild(row);
@@ -581,58 +755,35 @@
             document.getElementById('stat-loses').innerText = loseEntries;
             
             const profitDisplay = document.getElementById('stat-profit');
-            profitDisplay.innerText = (totalNetProfit >= 0 ? "₱" : "-₱") + Math.abs(totalNetProfit).toFixed(2);
-            profitDisplay.style.color = totalNetProfit >= 0 ? "var(--accent-green)" : "var(--accent-red)";
-            document.getElementById('profit-card-border').style.borderLeftColor = totalNetProfit >= 0 ? "var(--accent-green)" : "var(--accent-red)";
+            const borderCard = document.getElementById('profit-card-border');
+            
+            if (totalNetProfit >= 0) {
+                profitDisplay.innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-green)";
+                borderCard.style.borderLeftColor = "var(--accent-green)";
+            } else {
+                profitDisplay.innerText = `-₱${Math.abs(totalNetProfit).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-red)";
+                borderCard.style.borderLeftColor = "var(--accent-red)";
+            }
             
             const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${wr}%`;
-
-            // Baguhin ang Matrix Indicators
-            if(totalSimulations > 0) {
-                document.getElementById('chance-win').innerText = wr + "%";
-                document.getElementById('chance-loss').innerText = (100 - wr).toFixed(1) + "%";
-                document.getElementById('matrix-remarks').innerText = wr >= 60 ? "STABLE MARKET DATA FLOW DETECTED" : "HIGH VOLATILITY RISK CHANNELS";
-                
-                const finalAction = document.getElementById('big-action-text');
-                if (wr >= 70) { finalAction.innerText = "EXECUTE LIVE TRADE"; finalAction.style.color = "var(--accent-green)"; }
-                else { finalAction.innerText = "MONITOR POSITION"; finalAction.style.color = "var(--yellow-gold)"; }
-            }
-        }
-
-        function exportHistoryToTxt() {
-            if (snappedCandlesList.length === 0) { alert("Walang laman ang listahan mo, boss."); return; }
-            let textOutput = "TRADING HISTORY LOGS EXPORT\n============================\n";
-            snappedCandlesList.forEach(c => {
-                textOutput += `[${c.time}] Asset: ${c.symbol} | Price: ₱${c.close.toFixed(2)} | Outcome: ${c.outcome}\n`;
-            });
-            const blob = new Blob([textOutput], { type: "text/plain" });
-            const anchor = document.createElement("a");
-            anchor.download = "Trading_History_Export.txt"; anchor.href = URL.createObjectURL(blob);
-            anchor.click();
         }
 
         function switchTab(buttonElement, tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-view').forEach(view => view.className = 'tab-view');
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
             buttonElement.classList.add('active');
-            document.getElementById(tabId).className = 'tab-view active';
+            document.getElementById(tabId).classList.add('active');
         }
 
         function handleControlChange() { fetchLiveMarketData(false); }
-        function triggerManualCalculation() { fetchLiveMarketData(true); }
+        function triggerManualCalculation(element) { fetchLiveMarketData(true); }
 
-        window.onload = function() {
-            if(localStorage.getItem('local_candles')) {
-                snappedCandlesList = JSON.parse(localStorage.getItem('local_candles')) || [];
-                totalSimulations = snappedCandlesList.length;
-                winEntries = snappedCandlesList.filter(c => c.outcome === "WIN").length;
-                loseEntries = totalSimulations - winEntries;
-                totalNetProfit = winEntries * 15 - loseEntries * 10; // estimate recovery
-                updateDashboardUI(); rebuildHistoryTableUI(); computeStandardRSI();
-                document.getElementById('saved-nodes-count').innerText = snappedCandlesList.length;
-            }
-            fetchLiveMarketData(false);
+        window.onload = function() { 
+            loadDataFromInternalStorage();
+            fetchLiveMarketData(false); 
             calculateRiskMetrics();
         };
     </script>
