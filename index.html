@@ -156,7 +156,6 @@
         .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
         .stat-card.w-green { border-left-color: var(--accent-green); }
         .stat-card.w-blue { border-left-color: var(--accent-blue); }
-        .stat-card.w-orange { border-left-color: var(--orange); }
 
         .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
         .stat-value { font-size: 1.4rem; font-weight: 700; }
@@ -196,6 +195,7 @@
         .btn-action:active { transform: scale(0.95); }
         .btn-green { background-color: var(--accent-green); color: #000; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
         .btn-blue { background-color: var(--accent-blue); color: #fff; }
+        .btn-red { background-color: var(--accent-red); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); margin-top: 15px; }
 
         .risk-title {
             font-size: 0.9rem; font-weight: 700; color: var(--cyan-blue); text-transform: uppercase; margin: 20px 0 15px 0; letter-spacing: 0.5px;
@@ -206,7 +206,6 @@
         }
         .big-action-text { color: var(--yellow-gold); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; line-height: 1.2; }
 
-        /* UPGRADED HISTORY LOGS STYLING */
         .history-table {
             width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem;
         }
@@ -221,6 +220,19 @@
 
         .reset-link { text-align: center; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin-top: 15px; text-decoration: none; display: block; }
 
+        /* CANDLESTICK CONTAINER DESIGN */
+        .chart-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+        }
+
         footer { text-align: center; padding: 25px 0 10px 0; color: var(--yellow-gold); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
     </style>
 </head>
@@ -234,16 +246,17 @@
     <div class="market-bar">
         <div>
             <span class="pulse-dot"></span>
-            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: MER</span>
+            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: BDO</span>
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱590.00</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱155.21</span>
         </div>
     </div>
 
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-candle-chart')">📈 Candle Chart</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-risk')">Risk Management</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
         <button class="tab-btn" onclick="switchTab(this, 'view-candle')">Candle Reading</button>
@@ -262,8 +275,8 @@
             <div class="input-group" style="margin-bottom:0;">
                 <label>Select PSE Stock</label>
                 <select id="asset-selector" class="input-control" onchange="handleControlChange()">
-                    <option value="MER" selected>MERALCO (MER)</option>
-                    <option value="BDO">BDO Unibank (BDO)</option>
+                    <option value="BDO" selected>BDO Unibank (BDO)</option>
+                    <option value="MER">MERALCO (MER)</option>
                     <option value="BPI">Bank of PI (BPI)</option>
                     <option value="MBT">Metrobank (MBT)</option>
                     <option value="SM">SM Investments (SM)</option>
@@ -305,7 +318,33 @@
         <div class="reset-link" onclick="resetInputBoard()">Reset Input Board</div>
     </div>
 
-    <!-- TAB 2: RISK MANAGEMENT -->
+    <!-- NEW TAB: CANDLE CHART -->
+    <div id="view-candle-chart" class="tab-view">
+        <div class="section-title" style="color: var(--cyan-blue);">📊 Real-Time Candlestick Feed</div>
+        
+        <div class="chart-box">
+            <!-- Dynamic SVG Canvas Area -->
+            <svg id="candle-svg-canvas" width="100%" height="200" style="background-color: #0f1016; border-radius: 6px;">
+                <!-- Grid Horizontal Baseline Guidelines -->
+                <line x1="0" y1="50" x2="100%" y2="50" stroke="#1f2232" stroke-dasharray="4"/>
+                <line x1="0" y1="100" x2="100%" y2="100" stroke="#1f2232" stroke-dasharray="4"/>
+                <line x1="0" y1="150" x2="100%" y2="150" stroke="#1f2232" stroke-dasharray="4"/>
+                <g id="dynamic-candles-group"></g>
+                <text id="chart-empty-notice" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--text-muted)" font-size="12">Mag-snap ng candle para mag-drawing dito.</text>
+            </svg>
+        </div>
+
+        <div class="status-card teal">
+            <div class="card-label">💡 Day Trader Golden Rules:</div>
+            <div class="card-value" style="font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+                • <b style="color:#fff;">Cut Loss Early:</b> Huwag hahayaang ubusin ng isang maling trade ang capital mo.<br>
+                • <b style="color:#fff;">Trend is your Friend:</b> Sumabay sa agos ng market bias (Bullish/Bearish).<br>
+                • <b style="color:#fff;">Volume & Candlestick:</b> Tumingin sa haba ng mitsa (wicks) para malaman ang rejection zones.
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: RISK MANAGEMENT -->
     <div id="view-risk" class="tab-view">
         <div class="risk-title">Risk Management & Calculator</div>
         
@@ -338,7 +377,7 @@
         <button class="btn-action btn-blue" onclick="saveRiskToMatrix()">Save To Matrix</button>
     </div>
 
-    <!-- TAB 3: PLANNER AI (DYNAMIC ARRAYS UPGRADE) -->
+    <!-- TAB 4: PLANNER AI -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner</div>
         <div class="status-card orange">
@@ -351,7 +390,7 @@
         </div>
     </div>
 
-    <!-- TAB 4: CANDLE READING -->
+    <!-- TAB 5: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div id="candle-engine-title" class="section-title">Candle Sign Engine</div>
         <div class="status-card teal">
@@ -364,20 +403,20 @@
         </div>
     </div>
 
-    <!-- TAB 5: DASHBOARD STATS -->
+    <!-- TAB 6: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title" style="color:#fff; font-size:0.85rem; margin-bottom:15px;">Pro Account Metrics Engine</div>
         
         <div class="grid-2x2">
-            <div class="stat-card w-green" style="border-left-color: var(--accent-green);">
+            <div class="stat-card w-green">
                 <div class="stat-label">Win Rate Accuracy</div>
                 <div id="stat-winrate" class="stat-value">0.0%</div>
             </div>
-            <div class="stat-card w-green" id="profit-card-border" style="border-left-color: var(--accent-green);">
+            <div class="stat-card w-green" id="profit-card-border">
                 <div class="stat-label">Net Profit / Loss</div>
                 <div id="stat-profit" class="stat-value">₱0.00</div>
             </div>
-            <div class="stat-card w-blue" style="border-left-color: var(--accent-blue);">
+            <div class="stat-card w-blue">
                 <div class="stat-label">Total Simulations</div>
                 <div id="stat-total" class="stat-value">0</div>
             </div>
@@ -409,9 +448,11 @@
         <div class="big-action-box">
             <div id="big-action-text" class="big-action-text">WAITING</div>
         </div>
+
+        <button class="btn-action btn-red" onclick="masterClearAllData()">🗑️ Clear All Dashboard & History</button>
     </div>
 
-    <!-- TAB 6: HISTORY LOGS (LIVE FEED STYLING UPGRADE) -->
+    <!-- TAB 7: HISTORY LOGS -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
         <div style="background-color: var(--card-bg); border-radius: 8px; padding: 10px; overflow-x: auto;">
@@ -432,6 +473,7 @@
                 </tbody>
             </table>
         </div>
+        <button class="btn-action btn-red" onclick="masterClearAllData()">🗑️ Clear All History Logs</button>
     </div>
 
     <footer>Developed by: Renante Fullo</footer>
@@ -444,6 +486,7 @@
         let totalNetProfit = 0;
         let selectedTradingMode = 'DAY';
         let selectedExpectedOutcome = 'PENDING';
+        let snappedCandlesList = []; // Repository para sa drowing ng kandila
 
         function setTradingMode(mode) {
             selectedTradingMode = mode;
@@ -451,6 +494,7 @@
             document.getElementById('mode-long').classList.toggle('active', mode === 'LONG');
         }
 
+        // CONTROL: Pagbabago ng Inaasahang Kinalabasan
         function setExpectedOutcome(outcome) {
             selectedExpectedOutcome = outcome;
             document.getElementById('out-win').classList.toggle('active', outcome === 'WIN');
@@ -478,6 +522,51 @@
             alert("Board cleared, waiting for next tick selection.");
         }
 
+        // CONTROLLER: MASTER RESET FUNCTION
+        function masterClearAllData() {
+            if (confirm("Sigurado ka boss? Mabubura lahat ng records sa Dashboard, History, at Candle Chart mo.")) {
+                exportedDataDatabase = [];
+                snappedCandlesList = [];
+                totalSimulations = 0;
+                winEntries = 0;
+                loseEntries = 0;
+                totalNetProfit = 0;
+                
+                document.getElementById('stat-total').innerText = "0";
+                document.getElementById('stat-wins').innerText = "0";
+                document.getElementById('stat-loses').innerText = "0";
+                
+                const profitDisplay = document.getElementById('stat-profit');
+                profitDisplay.innerText = "₱0.00";
+                profitDisplay.style.color = "var(--text-main)";
+                document.getElementById('profit-card-border').style.borderLeftColor = "var(--border-color)";
+                
+                document.getElementById('stat-winrate').innerText = "0.0%";
+                document.getElementById('saved-nodes-count').innerText = "0";
+                
+                document.getElementById('chance-win').innerText = "0%";
+                document.getElementById('chance-loss').innerText = "0%";
+                document.getElementById('matrix-remarks').innerText = "WAITING FOR MARKET TRIGGER";
+                
+                const actionBox = document.getElementById('big-action-text');
+                actionBox.innerText = "WAITING";
+                actionBox.style.color = "var(--yellow-gold)";
+                
+                document.getElementById('history-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td>
+                    </tr>
+                `;
+                
+                // Burahin din ang drowing ng kandila
+                document.getElementById('dynamic-candles-group').innerHTML = "";
+                document.getElementById('chart-empty-notice').style.display = "block";
+                
+                alert("Malinis na ang records mo boss! Back to zero control na.");
+            }
+        }
+
+        // ENGINE LOOP: Kumukuha ng Datos ng Merkado
         async function fetchLiveMarketData(isManualSnap = false) {
             const selector = document.getElementById('asset-selector');
             if (!selector) return;
@@ -485,7 +574,7 @@
             const symbol = selector.value; 
 
             const basePrices = { 
-                "MER": 590.00, "BDO": 155.12, "BPI": 121.03, "MBT": 68.00, 
+                "MER": 590.00, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, 
                 "SM": 942.00, "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, 
                 "ICT": 350.00, "ALI": 29.00, "GLO": 1720.00, "TEL": 1340.00, 
                 "URC": 96.00, "AEV": 36.00, "AGI": 9.80, "DMCI": 11.30, 
@@ -518,13 +607,13 @@
             document.getElementById('detected-pattern-name').innerText = isBearish ? "BEARISH ENGULFING" : "BULLISH ENGULFING";
             document.getElementById('market-bias-badge').innerText = biasDirection;
 
-            // DYNAMIC RSI UPDATE
             const simulatedRSI = (Math.random() * 40 + 30).toFixed(1);
             let rsiStatus = "Neutral";
             if (simulatedRSI > 70) rsiStatus = "Overbought";
             if (simulatedRSI < 30) rsiStatus = "Oversold";
             document.getElementById('ai-rsi-text').innerText = `${simulatedRSI} — ${rsiStatus}`;
 
+            // CONTROL ACTION: Kapag pinindot ang snap button doon pa lang gagawa ng logs at kandila
             if (isManualSnap) {
                 totalSimulations++;
                 
@@ -549,10 +638,83 @@
                 
                 updateDashboardUI();
                 appendHistoryLog(symbol, close, outcomeLabel);
+                
+                // Idagdag ang candle data para iguhit sa tsart
+                snappedCandlesList.push({
+                    open: parseFloat(open),
+                    high: parseFloat(high),
+                    low: parseFloat(low),
+                    close: parseFloat(close),
+                    outcome: outcomeLabel
+                });
+                renderCandlesticks();
+
+                exportedDataDatabase.unshift({ company: symbol, close });
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+            }
+        }
+
+        // RENDERING LOGIC: Gumuguhit ng totoong Candlestick feed gamit ang SVG
+        function renderCandlesticks() {
+            const group = document.getElementById('dynamic-candles-group');
+            const notice = document.getElementById('chart-empty-notice');
+            if (!group) return;
+
+            if (snappedCandlesList.length > 0) {
+                notice.style.display = "none";
             }
 
-            exportedDataDatabase.unshift({ company: symbol, close });
-            document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+            group.innerHTML = ""; // Linisin ang lumang drawing para ma-update
+            
+            // Panatilihing kasya ang huling 8 na kandila para hindi lumagpas sa screen ng cp
+            const maxVisible = 8;
+            const startIdx = Math.max(0, snappedCandlesList.length - maxVisible);
+            const visibleCandles = snappedCandlesList.slice(startIdx);
+
+            const containerWidth = 320; 
+            const spacing = containerWidth / maxVisible;
+
+            visibleCandles.forEach((c, index) => {
+                const xPos = 30 + (index * spacing);
+                
+                // Pag-scale sa taas/baba ng kandila para magkasya sa 200px box
+                const highestPoint = Math.max(...visibleCandles.map(v => v.high));
+                const lowestPoint = Math.min(...visibleCandles.map(v => v.low));
+                const spread = (highestPoint - lowestPoint) || 1;
+
+                function scaleY(val) {
+                    return 170 - ((val - lowestPoint) / spread) * 120;
+                }
+
+                const yOpen = scaleY(c.open);
+                const yClose = scaleY(c.close);
+                const yHigh = scaleY(c.high);
+                const yLow = scaleY(c.low);
+
+                const candleColor = c.outcome === "WIN" ? "var(--accent-green)" : "var(--accent-red)";
+                
+                const topBody = Math.min(yOpen, yClose);
+                const bodyHeight = Math.max(Math.abs(yOpen - yClose), 4); // Minimal na kapal para sa patag na doji candle
+
+                // Gagawa ng wick/mitsa (Line)
+                const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                wick.setAttribute("x1", xPos + 10);
+                wick.setAttribute("y1", yHigh);
+                wick.setAttribute("x2", xPos + 10);
+                wick.setAttribute("y2", yLow);
+                wick.setAttribute("stroke", candleColor);
+                wick.setAttribute("stroke-width", "2");
+                group.appendChild(wick);
+
+                // Gagawa ng katawan/body (Rect)
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                body.setAttribute("x", xPos);
+                body.setAttribute("y", topBody);
+                body.setAttribute("width", "20");
+                body.setAttribute("height", bodyHeight);
+                body.setAttribute("fill", candleColor);
+                group.appendChild(body);
+            });
         }
 
         function updateDashboardUI() {
@@ -560,7 +722,6 @@
             document.getElementById('stat-wins').innerText = winEntries;
             document.getElementById('stat-loses').innerText = loseEntries;
             
-            // COLOR CODING FOR NET PROFIT
             const profitDisplay = document.getElementById('stat-profit');
             const borderCard = document.getElementById('profit-card-border');
             
@@ -569,7 +730,6 @@
                 profitDisplay.style.color = "var(--accent-green)";
                 borderCard.style.borderLeftColor = "var(--accent-green)";
             } else {
-                // Pinapakita nang maayos ang negative sign tulad ng sa screenshot niyo boss
                 profitDisplay.innerText = `-₱${Math.abs(totalNetProfit).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
                 profitDisplay.style.color = "var(--accent-red)";
                 borderCard.style.borderLeftColor = "var(--accent-red)";
@@ -578,12 +738,12 @@
             const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${wr}%`;
 
-            const simulatedWinChance = totalSimulations > 0 ? Math.floor(Math.random() * 20 + 65) : 0;
-            document.getElementById('chance-win').innerText = `${simulatedWinChance}%`;
+            const simulatedWinChance = totalSimulations > 0 ? Math.floor(Math.random() * 15 + 65) : 0;
+            document.getElementById('chance-win').innerText = totalSimulations > 0 ? `${simulatedWinChance}%` : "0%";
             document.getElementById('chance-loss').innerText = totalSimulations > 0 ? `${100 - simulatedWinChance}%` : "0%";
 
             if (totalSimulations > 0) {
-                if (simulatedWinChance > 75) {
+                if (simulatedWinChance > 70) {
                     document.getElementById('matrix-remarks').innerText = "PROBABLY UNBEATABLE TRADING ENTRY SETUP";
                     document.getElementById('big-action-text').innerText = "EXECUTE LIVE TRADE";
                     document.getElementById('big-action-text').style.color = "var(--accent-green)";
@@ -595,25 +755,25 @@
             }
         }
 
-        // DYNAMIC TABLE BUILDER FOR HISTORY LOGS
         function appendHistoryLog(symbol, price, outcome) {
             const tbody = document.getElementById('history-table-body');
             
-            // Tanggalin ang "No historical data" row sa unang snap
             if (totalSimulations === 1) {
                 tbody.innerHTML = "";
             }
 
             const now = new Date();
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const finalAction = document.getElementById('big-action-text').innerText;
+            
+            const currentRemarks = document.getElementById('matrix-remarks').innerText;
+            const finalAction = currentRemarks === "PROBABLY UNBEATABLE TRADING ENTRY SETUP" ? "EXECUTE LIVE TRADE" : "MONITOR POSITION";
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td style="font-weight:bold;">${symbol}</td>
                 <td>₱${parseFloat(price).toFixed(2)}</td>
                 <td style="color:var(--text-muted);">${timeStr}</td>
-                <td style="font-size:0.7rem; color:var(--yellow-gold);">${finalAction}</td>
+                <td style="font-size:0.7rem; color:${finalAction === 'EXECUTE LIVE TRADE' ? 'var(--accent-green)' : 'var(--yellow-gold)'}; font-weight:bold;">${finalAction}</td>
                 <td class="${outcome === 'WIN' ? 'log-win' : 'log-loss'}">${outcome}</td>
             `;
             
