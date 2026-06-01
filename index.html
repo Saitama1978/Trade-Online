@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Calculator Pro — PSE Live Auto</title>
+    <title>Trading Calculator Pro — PSE Live Auto + Chart</title>
     <style>
         :root {
             --bg-color: #0c0d14;
@@ -90,6 +90,74 @@
             box-shadow: 0 0 8px var(--accent-green);
         }
 
+        /* 📈 CANDLESTICK CHART CONTAINER */
+        .chart-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            height: 180px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: 12px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .chart-placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .candle-stick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            width: 24px;
+            height: 100%;
+            min-width: 24px;
+        }
+
+        .candle-wick {
+            width: 2px;
+            background-color: #64748b;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .candle-body {
+            width: 14px;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 2;
+            transition: transform 0.2s ease;
+        }
+
+        .candle-body.bullish { background-color: var(--accent-green); box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
+        .candle-body.bearish { background-color: var(--accent-red); box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
+
+        .candle-time {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            position: absolute;
+            bottom: -15px;
+            white-space: nowrap;
+        }
+
         .tabs-container {
             overflow-x: auto;
             white-space: nowrap;
@@ -97,11 +165,10 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 5px;
             -webkit-overflow-scrolling: touch;
+            margin-top: 15px;
         }
 
-        .tabs-container::-webkit-scrollbar {
-            display: none;
-        }
+        .tabs-container::-webkit-scrollbar { display: none; }
 
         .tab-btn {
             display: inline-block;
@@ -238,6 +305,11 @@
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
             <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱155.21</span>
         </div>
+    </div>
+
+    <!-- 📊 THE CANDLESTICK CHART VIEW -->
+    <div class="chart-container" id="main-candle-chart">
+        <div class="chart-placeholder-text" id="chart-blank-notice">No Candlestick Data Snapped Yet</div>
     </div>
 
     <div class="tabs-container">
@@ -421,7 +493,6 @@
             const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
             const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 150;
             const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 165;
-            
             const livePrice = parseFloat(document.getElementById('inp-close').value) || 155.21;
 
             const maxRiskAmount = (balance * (slippage / 100)).toFixed(2);
@@ -444,7 +515,6 @@
             alert("Board Fields Cleared.");
         }
 
-        // SWAK SA 9:30 AM - 3:30 PM HOURLY TRADE (5-PERIOD RSI ENGINE)
         function computeStandardRSI() {
             const rsiDisplay = document.getElementById('ai-rsi-text');
             const strategyDisplay = document.getElementById('ai-strategy-status');
@@ -461,17 +531,11 @@
 
             let gains = 0;
             let losses = 0;
-
-            // Kukunin lang nito ang huling 5 na kandila para sa mabilis na intraday tracking
             const targetData = snappedCandlesList.slice(-requiredPeriods);
 
             for (let i = 1; i < targetData.length; i++) {
                 let difference = targetData[i].close - targetData[i-1].close;
-                if (difference > 0) {
-                    gains += difference;
-                } else {
-                    losses += Math.abs(difference);
-                }
+                if (difference > 0) { gains += difference; } else { losses += Math.abs(difference); }
             }
 
             let avgGain = gains / requiredPeriods;
@@ -480,7 +544,6 @@
             if (avgLoss === 0) {
                 rsiDisplay.innerText = "100.0 — Max Intraday Buy Pressure";
                 rsiDisplay.style.color = "var(--accent-green)";
-                strategyDisplay.innerText = "Strong upward acceleration.";
                 return;
             }
 
@@ -494,12 +557,66 @@
             } else if (rsiValue <= 30) {
                 rsiDisplay.innerText = `${rsiValue} — 🟢 SHORT-TERM OVERSOLD`;
                 rsiDisplay.style.color = "var(--accent-green)";
-                strategyDisplay.innerText = "Intraday support bounce area. Good spot for a quick long/buy trade.";
+                strategyDisplay.innerText = "Intraday support bounce area. Good spot for a quick buy.";
             } else {
                 rsiDisplay.innerText = `${rsiValue} — 🟡 INTRADAY NEUTRAL`;
                 rsiDisplay.style.color = "var(--yellow-gold)";
                 strategyDisplay.innerText = "Price balancing nicely within today's volume range.";
             }
+        }
+
+        // 🎨 FUNCTION PARA I-RENDER ANG VISUAL CANDLE CHART
+        function renderCandleChartUI() {
+            const chartBox = document.getElementById('main-candle-chart');
+            const notice = document.getElementById('chart-blank-notice');
+            
+            if (snappedCandlesList.length === 0) {
+                chartBox.innerHTML = '<div class="chart-placeholder-text" id="chart-blank-notice">No Candlestick Data Snapped Yet</div>';
+                return;
+            }
+
+            if (notice) notice.remove();
+
+            // Panatilihin ang huling 12 na kandila sa screen para magkasya sa mobile view
+            const maxVisibleCandles = snappedCandlesList.slice(-12);
+            
+            let closes = maxVisibleCandles.map(c => c.close);
+            let opens = maxVisibleCandles.map(c => c.open);
+            let highs = maxVisibleCandles.map(c => c.high);
+            let lows = maxVisibleCandles.map(c => c.low);
+            
+            let globalMax = Math.max(...highs);
+            let globalMin = Math.min(...lows);
+            let chartHeight = 140; 
+            let priceRange = (globalMax - globalMin) || 1;
+
+            chartBox.innerHTML = ""; 
+
+            maxVisibleCandles.forEach(candle => {
+                const isBullish = candle.close >= candle.open;
+                
+                // Kalkulahin ang pixel positions base sa high, low, open, at close
+                let wickTop = ((globalMax - candle.high) / priceRange) * chartHeight;
+                let wickBottom = ((globalMax - candle.low) / priceRange) * chartHeight;
+                let bodyTop = ((globalMax - Math.max(candle.open, candle.close)) / priceRange) * chartHeight;
+                let bodyBottom = ((globalMax - Math.min(candle.open, candle.close)) / priceRange) * chartHeight;
+                
+                let bodyHeight = Math.max(bodyBottom - bodyTop, 4); // Minimal 4px body para nakikita
+                let wickHeight = wickBottom - wickTop;
+
+                const stickDiv = document.createElement('div');
+                stickDiv.className = "candle-stick";
+                
+                stickDiv.innerHTML = `
+                    <div class="candle-wick" style="top: ${wickTop}px; height: ${wickHeight}px;"></div>
+                    <div class="candle-body ${isBullish ? 'bullish' : 'bearish'}" style="top: ${bodyTop}px; height: ${bodyHeight}px;"></div>
+                    <div class="candle-time">${candle.time}</div>
+                `;
+                chartBox.appendChild(stickDiv);
+            });
+
+            // Auto-scroll ang chart sa pinaka-kanan kapag lumagpas sa screen
+            chartBox.scrollLeft = chartBox.scrollWidth;
         }
 
         function masterClearAllData() {
@@ -510,6 +627,7 @@
                 updateDashboardUI();
                 rebuildHistoryTableUI();
                 computeStandardRSI();
+                renderCandleChartUI();
                 document.getElementById('saved-nodes-count').innerText = "0";
                 alert("Storage Purged Clean!");
             }
@@ -545,13 +663,23 @@
                 if (isWin) winEntries++; else loseEntries++;
                 totalNetProfit += rewardAmount;
 
-                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                snappedCandlesList.push({ symbol, close: close, outcome: outcomeLabel, time: timeStr });
+                // Imemorya ang buong OHLC data para sa Chart engine
+                snappedCandlesList.push({ 
+                    symbol, 
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close, 
+                    outcome: outcomeLabel, 
+                    time: timeStr 
+                });
 
                 updateDashboardUI();
                 rebuildHistoryTableUI();
                 computeStandardRSI();
+                renderCandleChartUI();
 
                 document.getElementById('saved-nodes-count').innerText = snappedCandlesList.length;
                 localStorage.setItem('local_candles', JSON.stringify(snappedCandlesList));
@@ -630,9 +758,8 @@
                 totalSimulations = snappedCandlesList.length;
                 winEntries = snappedCandlesList.filter(c => c.outcome === "WIN").length;
                 loseEntries = totalSimulations - winEntries;
-                // Estimate reconstruction for live metrics dashboard
                 totalNetProfit = winEntries * 15 - loseEntries * 10; 
-                updateDashboardUI(); rebuildHistoryTableUI(); computeStandardRSI();
+                updateDashboardUI(); rebuildHistoryTableUI(); computeStandardRSI(); renderCandleChartUI();
                 document.getElementById('saved-nodes-count').innerText = snappedCandlesList.length;
             }
             fetchLiveMarketData(false);
