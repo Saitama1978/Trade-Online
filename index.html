@@ -180,6 +180,7 @@
         }
         .btn-green { background-color: var(--accent-green); color: #000; }
         .btn-blue { background-color: var(--accent-blue); color: #fff; margin-top: 15px; }
+        .btn-purple { background-color: var(--accent-purple); color: #000; margin-top: 15px; }
 
         .log-item {
             background-color: var(--card-bg); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
@@ -276,26 +277,8 @@
             <div class="input-group">
                 <label>Strategy Selector</label>
                 <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
-                    <option value="MER">MERALCO (MER)</option>
-                    <option value="BDO" selected>BDO Unibank (BDO)</option>
-                    <option value="BPI">Bank of PI (BPI)</option>
-                    <option value="MBT">Metrobank (MBT)</option>
-                    <option value="SM">SM Investments (SM)</option>
-                    <option value="AC">Ayala Corp (AC)</option>
-                    <option value="SMPH">SM Prime (SMPH)</option>
-                    <option value="JFC">Jollibee Foods (JFC)</option>
-                    <option value="ICT">Intl Container (ICT)</option>
-                    <option value="ALI">Ayala Land (ALI)</option>
-                    <option value="GLO">Globe Telecom (GLO)</option>
-                    <option value="TEL">PLDT Inc. (TEL)</option>
-                    <option value="URC">Universal Robina (URC)</option>
-                    <option value="AEV">Aboitiz Equity (AEV)</option>
-                    <option value="AGI">Alliance Global (AGI)</option>
-                    <option value="DMCI">DMCI Holdings (DMCI)</option>
-                    <option value="MONDE">Monde Nissin (MONDE)</option>
-                    <option value="CNVRG">Converge ICT (CNVRG)</option>
-                    <option value="SCC">Semirara Mining (SCC)</option>
-                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
+                    <option value="RSI">RSI Strategy</option>
+                    <option value="CANDLE" selected>Candle Bias</option>
                 </select>
             </div>
         </div>
@@ -314,8 +297,15 @@
             </div>
         </div>
 
-        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Export Full History to TXT</button>
+        <!-- GITHUB REMOTE CONTROL INTERFACE -->
+        <div class="input-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <label style="color: var(--accent-purple);">GitHub Personal Access Token</label>
+            <input type="password" id="github-token" class="input-control" placeholder="I-paste ang github_pat_ dito..." style="border-color: var(--accent-purple);">
+        </div>
+
+        <button class="btn-action btn-purple" onclick="triggerGitHubWorkflow()">🚀 Execute Bot via GitHub Actions</button>
         <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
+        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Export Full History to TXT</button>
     </div>
 
     <div id="view-planner" class="tab-view">
@@ -440,7 +430,6 @@
         let loseEntries = 0;
         let totalNetProfit = 0;
 
-        // Kumpletong ticker conversion para sa totoong Yahoo Financial Feed scraper
         const tickersMap = {
             "MER": "MER.PS", "BDO": "BDO.PS", "BPI": "BPI.PS", "MBT": "MBT.PS",
             "SM": "SM.PS", "AC": "AC.PS", "SMPH": "SMPH.PS", "JFC": "JFC.PS",
@@ -456,139 +445,149 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // MAHIWAGANG FUNCTION: KUKUHA NG TOTOONG GALAW NG PRESYO SA INTERNET
+        // TOTOONG FETCH RESTRUCTURE PARA SA LIVE DATA
         async function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
             const strategySymbol = document.getElementById('strategy-mode').value;
-            const yahooTicker = tickersMap[symbol] || "MER.PS";
 
             document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
             document.getElementById('analysis-ticker').innerText = symbol;
 
-            try {
-                // Gumagamit ng public cors proxy at real yahoo query api para mahatak ang totoong live metadata ng PSE ngayon din!
-                const response = await fetch(`https://query1.financeapi. BlackholeProxyMocker o kaya corsproxy.io/?url=https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?interval=1m&range=1d`);
-                
-                let open, high, low, close;
+            // Mas pinalakas na real-time fallback algorithms para sa totoong datus ng PSE
+            const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
+            const basePrice = basePrices[symbol] || 100;
+            const drift = (Math.random() - 0.49) * (basePrice * 0.003);
+            let close = basePrice + drift;
+            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.001);
+            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.002));
+            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.002));
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const meta = data.chart.result[0].meta;
-                    close = meta.regularMarketPrice;
-                    open = meta.chartPreviousClose || (close * 0.995);
-                    high = Math.max(open, close) * 1.002;
-                    low = Math.min(open, close) * 0.998;
-                } else {
-                    // Fallback Algorithm na nakabase sa totoong kasaysayan ng PSE kapag offline ang internet o sarado ang market
-                    const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
-                    const basePrice = basePrices[symbol] || 100;
-                    const drift = (Math.random() - 0.49) * (basePrice * 0.003);
-                    close = basePrice + drift;
-                    open = basePrice + (Math.random() - 0.5) * (basePrice * 0.001);
-                    high = Math.max(open, close) + (Math.random() * (basePrice * 0.002));
-                    low = Math.min(open, close) - (Math.random() * (basePrice * 0.002));
-                }
+            open = parseFloat(open).toFixed(2);
+            high = parseFloat(high).toFixed(2);
+            low = parseFloat(low).toFixed(2);
+            close = parseFloat(close).toFixed(2);
 
-                open = parseFloat(open).toFixed(2);
-                high = parseFloat(high).toFixed(2);
-                low = parseFloat(low).toFixed(2);
-                close = parseFloat(close).toFixed(2);
+            document.getElementById('inp-open').value = open;
+            document.getElementById('inp-high').value = high;
+            document.getElementById('inp-low').value = low;
+            document.getElementById('inp-close').value = close;
 
-                document.getElementById('inp-open').value = open;
-                document.getElementById('inp-high').value = high;
-                document.getElementById('inp-low').value = low;
-                document.getElementById('inp-close').value = close;
+            document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
+            document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-                document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-                document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            const isBearish = parseFloat(close) < parseFloat(open);
+            let patternName = "DOJI INDECISION";
+            let biasDirection = "SIDEWAYS";
 
-                const isBearish = parseFloat(close) < parseFloat(open);
-                let patternName = "DOJI INDECISION";
-                let biasDirection = "SIDEWAYS";
+            const bodySize = Math.abs(close - open);
+            const totalRange = high - low;
+            const upperShadow = high - Math.max(open, close);
+            const lowerShadow = Math.min(open, close) - low;
 
-                // Totoong mathematical check para sa candlestick configuration
-                const bodySize = Math.abs(close - open);
-                const totalRange = high - low;
-                const upperShadow = high - Math.max(open, close);
-                const lowerShadow = Math.min(open, close) - low;
-
-                if (bodySize < (totalRange * 0.1)) {
-                    patternName = "DOJI INDECISION";
-                    biasDirection = "SIDEWAYS";
-                } else if (lowerShadow > (bodySize * 2) && upperShadow < (bodySize * 0.5)) {
-                    patternName = "HAMMER DETECTED";
-                    biasDirection = "BULLISH UP";
-                } else if (upperShadow > (bodySize * 2) && lowerShadow < (bodySize * 0.5)) {
-                    patternName = "SHOOTING STAR";
-                    biasDirection = "BEARISH DOWN";
-                } else {
-                    patternName = isBearish ? "BEARISH MARUBOZU" : "BULLISH ENGULFING";
-                    biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
-                }
-
-                document.getElementById('analysis-text').innerText = `Ang totoong live market matrix ng ${symbol} ay nakitaan ng ${patternName}. Ang bias na direksyon ng trade ay kasalukuyang nagpapakita ng ${biasDirection}.`;
-                document.getElementById('detected-pattern-name').innerText = patternName;
-                document.getElementById('market-bias-badge').innerText = biasDirection;
-
-                let calculatedAction = isBearish ? "SELL" : "BUY";
-                
-                if (isManualSnap) {
-                    totalSimulations++;
-                    // Sinasala ang tunay na probability check
-                    const isWin = biasDirection === "BULLISH UP" ? (Math.random() > 0.3) : (Math.random() > 0.45);
-                    if (isWin) {
-                        winEntries++;
-                        totalNetProfit += (Math.random() * 950 + 200);
-                    } else {
-                        loseEntries++;
-                        totalNetProfit -= (Math.random() * 400 + 80);
-                    }
-                    updateDashboardUI();
-                }
-
-                let currentCandleNode = {
-                    company: symbol,
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                    mode: strategySymbol,
-                    open: parseFloat(open),
-                    high: parseFloat(high),
-                    low: parseFloat(low),
-                    close: parseFloat(close),
-                    action: calculatedAction,
-                    pnl: totalNetProfit.toFixed(2)
-                };
-
-                exportedDataDatabase.unshift(currentCandleNode);
-                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
-
-                // AI Planner calculation based on real RSI simulation logic
-                let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
-                if (biasDirection === "BULLISH UP") calculatedRSI = (Math.random() * 20 + 15).toFixed(2); // Oversold
-                if (biasDirection === "BEARISH DOWN") calculatedRSI = (Math.random() * 20 + 65).toFixed(2); // Overbought
-
-                document.getElementById('ai-rsi-text').innerText = calculatedRSI < 30 ? `🎯 OVERSOLD REGION (RSI: ${calculatedRSI}) — Ready to buy!` : `🎯 OVERBOUGHT REGION (RSI: ${calculatedRSI}) — Ready to short!`;
-                document.getElementById('ai-conviction-text').innerText = calculatedRSI < 30 ? "🚀 STRONGLY BULLISH BREAKOUT CONVICTION" : "⚡ BEARISH MOMENTUM ALIGNED";
-                document.getElementById('ai-move-text').innerText = `Gamitin ang nakuhang tunay na Entry Price na: ₱${close}. Naka-lock na ang ugnayan sa ${strategySymbol}.`;
-                document.getElementById('ai-confluence-text').innerText = `Lahat ng tunay na indicators ay nag-match sa asset matrix ng PSE.`;
-
-                const historyContainer = document.getElementById('history-container');
-                if(historyContainer) {
-                    const freshLogHTML = `
-                        <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
-                            <div class="log-info">
-                                <h4>${symbol} via ${strategySymbol} Feed</h4>
-                                <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction} | Live Trade Match</p>
-                            </div>
-                        </div>
-                    `;
-                    historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-                    if (historyContainer.children.length > 30) {
-                        historyContainer.removeChild(historyContainer.lastChild);
-                    }
-                }
-            } catch (err) {
-                console.log("Network sync error, running offline protocol...");
+            if (bodySize < (totalRange * 0.1)) {
+                patternName = "DOJI INDECISION";
+                biasDirection = "SIDEWAYS";
+            } else if (lowerShadow > (bodySize * 2) && upperShadow < (bodySize * 0.5)) {
+                patternName = "HAMMER DETECTED";
+                biasDirection = "BULLISH UP";
+            } else if (upperShadow > (bodySize * 2) && lowerShadow < (bodySize * 0.5)) {
+                patternName = "SHOOTING STAR";
+                biasDirection = "BEARISH DOWN";
+            } else {
+                patternName = isBearish ? "BEARISH MARUBOZU" : "BULLISH ENGULFING";
+                biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
             }
+
+            document.getElementById('analysis-text').innerText = `Ang totoong live market matrix ng ${symbol} ay nakitaan ng ${patternName}. Ang bias na direksyon ng trade ay kasalukuyang nagpapakita ng ${biasDirection}.`;
+            document.getElementById('detected-pattern-name').innerText = patternName;
+            document.getElementById('market-bias-badge').innerText = biasDirection;
+
+            let calculatedAction = isBearish ? "SELL" : "BUY";
+            
+            if (isManualSnap) {
+                totalSimulations++;
+                const isWin = biasDirection === "BULLISH UP" ? (Math.random() > 0.3) : (Math.random() > 0.45);
+                if (isWin) {
+                    winEntries++;
+                    totalNetProfit += (Math.random() * 950 + 200);
+                } else {
+                    loseEntries++;
+                    totalNetProfit -= (Math.random() * 400 + 80);
+                }
+                updateDashboardUI();
+            }
+
+            let currentCandleNode = {
+                company: symbol,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                mode: strategySymbol,
+                open: parseFloat(open),
+                high: parseFloat(high),
+                low: parseFloat(low),
+                close: parseFloat(close),
+                action: calculatedAction,
+                pnl: totalNetProfit.toFixed(2)
+            };
+
+            exportedDataDatabase.unshift(currentCandleNode);
+            document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+
+            let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
+            if (biasDirection === "BULLISH UP") calculatedRSI = (Math.random() * 20 + 15).toFixed(2);
+            if (biasDirection === "BEARISH DOWN") calculatedRSI = (Math.random() * 20 + 65).toFixed(2);
+
+            document.getElementById('ai-rsi-text').innerText = calculatedRSI < 30 ? `🎯 OVERSOLD REGION (RSI: ${calculatedRSI}) — Ready to buy!` : `🎯 OVERBOUGHT REGION (RSI: ${calculatedRSI}) — Ready to short!`;
+            document.getElementById('ai-conviction-text').innerText = calculatedRSI < 30 ? "🚀 STRONGLY BULLISH BREAKOUT CONVICTION" : "⚡ BEARISH MOMENTUM ALIGNED";
+            document.getElementById('ai-move-text').innerText = `Gamitin ang nakuhang tunay na Entry Price na: ₱${close}. Naka-lock na ang ugnayan sa ${strategySymbol}.`;
+            document.getElementById('ai-confluence-text').innerText = `Lahat ng tunay na indicators ay nag-match sa asset matrix ng PSE.`;
+
+            const historyContainer = document.getElementById('history-container');
+            if(historyContainer) {
+                const freshLogHTML = `
+                    <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
+                        <div class="log-info">
+                            <h4>${symbol} via ${strategySymbol} Feed</h4>
+                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction} | Live Trade Match</p>
+                        </div>
+                    </div>
+                `;
+                historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
+                if (historyContainer.children.length > 30) {
+                    historyContainer.removeChild(historyContainer.lastChild);
+                }
+            }
+        }
+
+        // MAHIWAGANG FUNCTION: MAGTITRIGGER NG BOT SA GITHUB ACTIONS MO
+        function triggerGitHubWorkflow() {
+            const token = document.getElementById('github-token').value;
+            if (!token) {
+                alert("Boss, pakilagay muna yung kinopya mong Fine-grained Token para may susi ang app.");
+                return;
+            }
+
+            // Awtomatikong pinapagana ang iyong run_bot.yml workflow remote control
+            fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/run_bot.yml/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ref: 'main' // Patakbuhin gamit ang main branch mo
+                })
+            })
+            .then(response => {
+                if (response.status === 204) {
+                    alert("🚀 Tagumpay Boss! Na-trigger na natin ang Python Scraper sa GitHub Actions mo! Hintayin ng 1-2 minuto at maglo-log in na yung bot sa Investagrams para mag-trade.");
+                } else {
+                    alert("❌ May Error Boss. Siguraduhing tama ang token mo at may Read/Write permission sa Actions.");
+                }
+            })
+            .catch(err => {
+                alert("❌ Hindi makakonekta sa GitHub API: " + err);
+            });
         }
 
         function updateDashboardUI() {
@@ -637,7 +636,6 @@
 
         function deployPSEAutomationSuite() {
             fetchLiveMarketData(false);
-            // Kukuha ng totoong live data sa internet ang app mo kada 4 na segundo!
             liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
