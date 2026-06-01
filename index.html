@@ -156,7 +156,7 @@
         .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
         .stat-card.w-green { border-left-color: var(--accent-green); }
         .stat-card.w-blue { border-left-color: var(--accent-blue); }
-        .stat-card.w-orange { border-left-color: var(--accent-orange); }
+        .stat-card.w-orange { border-left-color: var(--orange); }
 
         .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
         .stat-value { font-size: 1.4rem; font-weight: 700; }
@@ -196,7 +196,6 @@
         .btn-action:active { transform: scale(0.95); }
         .btn-green { background-color: var(--accent-green); color: #000; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
         .btn-blue { background-color: var(--accent-blue); color: #fff; }
-        .btn-purple { background-color: var(--accent-purple); color: #000; }
 
         .risk-title {
             font-size: 0.9rem; font-weight: 700; color: var(--cyan-blue); text-transform: uppercase; margin: 20px 0 15px 0; letter-spacing: 0.5px;
@@ -205,7 +204,20 @@
         .big-action-box {
             border: 2px solid var(--yellow-gold); border-radius: 8px; padding: 25px; text-align: center; background-color: transparent; margin-top: 10px;
         }
-        .big-action-text { color: var(--yellow-gold); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .big-action-text { color: var(--yellow-gold); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; line-height: 1.2; }
+
+        /* UPGRADED HISTORY LOGS STYLING */
+        .history-table {
+            width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem;
+        }
+        .history-table th {
+            text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.7rem;
+        }
+        .history-table td {
+            padding: 10px 8px; border-bottom: 1px solid var(--border-color); color: #fff;
+        }
+        .log-win { color: var(--accent-green); font-weight: bold; }
+        .log-loss { color: var(--accent-red); font-weight: bold; }
 
         .reset-link { text-align: center; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin-top: 15px; text-decoration: none; display: block; }
 
@@ -293,7 +305,7 @@
         <div class="reset-link" onclick="resetInputBoard()">Reset Input Board</div>
     </div>
 
-    <!-- TAB 2: RISK MANAGEMENT (FIXED TO PESO ₱) -->
+    <!-- TAB 2: RISK MANAGEMENT -->
     <div id="view-risk" class="tab-view">
         <div class="risk-title">Risk Management & Calculator</div>
         
@@ -326,20 +338,29 @@
         <button class="btn-action btn-blue" onclick="saveRiskToMatrix()">Save To Matrix</button>
     </div>
 
-    <!-- TAB 3: PLANNER AI -->
+    <!-- TAB 3: PLANNER AI (DYNAMIC ARRAYS UPGRADE) -->
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner</div>
-        <div class="status-card orange"><div class="card-label">RSI Readout</div><div id="ai-rsi-text" class="card-value">Calculating...</div></div>
-        <div class="status-card blue"><div class="card-label">Strategy Setup</div><div class="card-value">Active Core Market Flow Alignment.</div></div>
+        <div class="status-card orange">
+            <div class="card-label">RSI Readout</div>
+            <div id="ai-rsi-text" class="card-value" style="font-weight: 700; color: var(--yellow-gold);">Calculating...</div>
+        </div>
+        <div class="status-card blue">
+            <div class="card-label">Strategy Setup</div>
+            <div class="card-value">Active Core Market Flow Alignment.</div>
+        </div>
     </div>
 
     <!-- TAB 4: CANDLE READING -->
     <div id="view-candle" class="tab-view">
         <div id="candle-engine-title" class="section-title">Candle Sign Engine</div>
-        <div class="pattern-display-box">
-            <div class="pattern-title">Detected Pattern:</div>
-            <div id="detected-pattern-name" class="pattern-value">READING...</div>
-            <div class="bias-row">BIAS DIRECTION: <span id="market-bias-badge" class="bias-badge">NONE</span></div>
+        <div class="status-card teal">
+            <div class="card-label">Detected Pattern:</div>
+            <div id="detected-pattern-name" class="card-value" style="font-weight:700;">READING...</div>
+        </div>
+        <div class="status-card orange">
+            <div class="card-label">Bias Direction:</div>
+            <div id="market-bias-badge" class="card-value" style="font-weight:700; color:var(--accent-orange);">NONE</div>
         </div>
     </div>
 
@@ -348,26 +369,26 @@
         <div class="section-title" style="color:#fff; font-size:0.85rem; margin-bottom:15px;">Pro Account Metrics Engine</div>
         
         <div class="grid-2x2">
-            <div class="stat-card w-green">
+            <div class="stat-card w-green" style="border-left-color: var(--accent-green);">
                 <div class="stat-label">Win Rate Accuracy</div>
                 <div id="stat-winrate" class="stat-value">0.0%</div>
             </div>
-            <div class="stat-card w-green">
+            <div class="stat-card w-green" id="profit-card-border" style="border-left-color: var(--accent-green);">
                 <div class="stat-label">Net Profit / Loss</div>
                 <div id="stat-profit" class="stat-value">₱0.00</div>
             </div>
-            <div class="stat-card w-blue">
+            <div class="stat-card w-blue" style="border-left-color: var(--accent-blue);">
                 <div class="stat-label">Total Simulations</div>
                 <div id="stat-total" class="stat-value">0</div>
             </div>
-            <div class="stat-card w-blue">
+            <div class="stat-card w-blue" style="border-left-color: var(--accent-teal);">
                 <div class="stat-label">Win Entries</div>
                 <div id="stat-wins" class="stat-value">0</div>
             </div>
         </div>
 
         <div class="grid-2x2" style="grid-template-columns: 1fr; margin-bottom: 20px;">
-            <div class="stat-card w-orange">
+            <div class="stat-card" style="border-left-color: var(--accent-orange);">
                 <div class="stat-label">Lose Entries</div>
                 <div id="stat-loses" class="stat-value">0</div>
             </div>
@@ -390,10 +411,27 @@
         </div>
     </div>
 
-    <!-- TAB 6: HISTORY LOGS -->
+    <!-- TAB 6: HISTORY LOGS (LIVE FEED STYLING UPGRADE) -->
     <div id="view-history" class="tab-view">
         <div class="section-title">Automated Live History Feed (PSE)</div>
-        <div id="history-container"></div>
+        <div style="background-color: var(--card-bg); border-radius: 8px; padding: 10px; overflow-x: auto;">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Price</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Outcome</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <footer>Developed by: Renante Fullo</footer>
@@ -480,6 +518,13 @@
             document.getElementById('detected-pattern-name').innerText = isBearish ? "BEARISH ENGULFING" : "BULLISH ENGULFING";
             document.getElementById('market-bias-badge').innerText = biasDirection;
 
+            // DYNAMIC RSI UPDATE
+            const simulatedRSI = (Math.random() * 40 + 30).toFixed(1);
+            let rsiStatus = "Neutral";
+            if (simulatedRSI > 70) rsiStatus = "Overbought";
+            if (simulatedRSI < 30) rsiStatus = "Oversold";
+            document.getElementById('ai-rsi-text').innerText = `${simulatedRSI} — ${rsiStatus}`;
+
             if (isManualSnap) {
                 totalSimulations++;
                 
@@ -487,14 +532,23 @@
                 if (selectedExpectedOutcome === 'WIN') isWin = true;
                 if (selectedExpectedOutcome === 'LOSS') isWin = false;
 
+                let outcomeLabel = "PENDING";
+                let changeAmount = 0;
+
                 if (isWin) {
                     winEntries++;
-                    totalNetProfit += (Math.random() * (basePrice * 0.05) + 10);
+                    changeAmount = (Math.random() * (basePrice * 0.05) + 10);
+                    totalNetProfit += changeAmount;
+                    outcomeLabel = "WIN";
                 } else {
                     loseEntries++;
-                    totalNetProfit -= (Math.random() * (basePrice * 0.03) + 5);
+                    changeAmount = (Math.random() * (basePrice * 0.03) + 5);
+                    totalNetProfit -= changeAmount;
+                    outcomeLabel = "LOSS";
                 }
+                
                 updateDashboardUI();
+                appendHistoryLog(symbol, close, outcomeLabel);
             }
 
             exportedDataDatabase.unshift({ company: symbol, close });
@@ -505,7 +559,21 @@
             document.getElementById('stat-total').innerText = totalSimulations;
             document.getElementById('stat-wins').innerText = winEntries;
             document.getElementById('stat-loses').innerText = loseEntries;
-            document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            
+            // COLOR CODING FOR NET PROFIT
+            const profitDisplay = document.getElementById('stat-profit');
+            const borderCard = document.getElementById('profit-card-border');
+            
+            if (totalNetProfit >= 0) {
+                profitDisplay.innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-green)";
+                borderCard.style.borderLeftColor = "var(--accent-green)";
+            } else {
+                // Pinapakita nang maayos ang negative sign tulad ng sa screenshot niyo boss
+                profitDisplay.innerText = `-₱${Math.abs(totalNetProfit).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-red)";
+                borderCard.style.borderLeftColor = "var(--accent-red)";
+            }
             
             const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${wr}%`;
@@ -525,6 +593,31 @@
                     document.getElementById('big-action-text').style.color = "var(--yellow-gold)";
                 }
             }
+        }
+
+        // DYNAMIC TABLE BUILDER FOR HISTORY LOGS
+        function appendHistoryLog(symbol, price, outcome) {
+            const tbody = document.getElementById('history-table-body');
+            
+            // Tanggalin ang "No historical data" row sa unang snap
+            if (totalSimulations === 1) {
+                tbody.innerHTML = "";
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const finalAction = document.getElementById('big-action-text').innerText;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="font-weight:bold;">${symbol}</td>
+                <td>₱${parseFloat(price).toFixed(2)}</td>
+                <td style="color:var(--text-muted);">${timeStr}</td>
+                <td style="font-size:0.7rem; color:var(--yellow-gold);">${finalAction}</td>
+                <td class="${outcome === 'WIN' ? 'log-win' : 'log-loss'}">${outcome}</td>
+            `;
+            
+            tbody.insertBefore(row, tbody.firstChild);
         }
 
         function switchTab(buttonElement, tabId) {
