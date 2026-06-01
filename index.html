@@ -220,7 +220,6 @@
 
         .reset-link { text-align: center; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin-top: 15px; text-decoration: none; display: block; }
 
-        /* CANDLESTICK CONTAINER DESIGN */
         .chart-box {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -294,16 +293,6 @@
                     <option value="JFC">Jollibee Foods (JFC)</option>
                     <option value="ICT">Intl Container (ICT)</option>
                     <option value="ALI">Ayala Land (ALI)</option>
-                    <option value="GLO">Globe Telecom (GLO)</option>
-                    <option value="TEL">PLDT Inc. (TEL)</option>
-                    <option value="URC">Universal Robina (URC)</option>
-                    <option value="AEV">Aboitiz Equity (AEV)</option>
-                    <option value="AGI">Alliance Global (AGI)</option>
-                    <option value="DMCI">DMCI Holdings (DMCI)</option>
-                    <option value="MONDE">Monde Nissin (MONDE)</option>
-                    <option value="CNVRG">Converge ICT (CNVRG)</option>
-                    <option value="SCC">Semirara Mining (SCC)</option>
-                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
                 </select>
             </div>
             <button class="input-control" style="background-color: #232438; color: var(--accent-purple); font-weight:700; height:45px;" onclick="alert('Time Synchronized with PSE Board.')">SET TIME</button>
@@ -352,16 +341,27 @@
 
     <!-- TAB 3: RISK MANAGEMENT -->
     <div id="view-risk" class="tab-view">
-        <div class="risk-title">Risk Management & Calculator</div>
+        <div class="risk-title">Risk Management & RRR Setup</div>
         
         <div class="grid-2x2">
             <div class="input-group">
                 <label>Account Balance (₱)</label>
-                <input type="number" id="risk-balance" class="input-control" value="6000">
+                <input type="number" id="risk-balance" class="input-control" value="6000" oninput="calculateRiskMetrics()">
             </div>
             <div class="input-group">
                 <label>Risk Slippage (%)</label>
-                <input type="number" id="risk-slippage" class="input-control" value="1" step="0.1">
+                <input type="number" id="risk-slippage" class="input-control" value="1" step="0.1" oninput="calculateRiskMetrics()">
+            </div>
+        </div>
+
+        <div class="grid-2x2">
+            <div class="input-group">
+                <label>Target Stop Loss (₱)</label>
+                <input type="number" id="risk-sl-price" class="input-control" value="150" oninput="calculateRiskMetrics()">
+            </div>
+            <div class="input-group">
+                <label>Target Take Profit (₱)</label>
+                <input type="number" id="risk-tp-price" class="input-control" value="165" oninput="calculateRiskMetrics()">
             </div>
         </div>
 
@@ -374,12 +374,18 @@
             </div>
         </div>
 
-        <div class="status-card teal" style="margin-top:20px;">
-            <div class="card-label">Calculated Max Allowed Risk</div>
-            <div id="risk-allocation-display" class="card-value" style="font-size:1.3rem; color:var(--accent-green); font-weight:bold;">₱60.00</div>
+        <div class="grid-2x2" style="margin-top:15px;">
+            <div class="status-card teal" style="margin-bottom:0;">
+                <div class="card-label">Max Allowed Risk</div>
+                <div id="risk-allocation-display" class="card-value" style="font-size:1.1rem; color:var(--accent-green); font-weight:bold;">₱60.00</div>
+            </div>
+            <div class="status-card orange" style="margin-bottom:0;" id="rrr-card-box">
+                <div class="card-label">Risk-to-Reward Ratio</div>
+                <div id="risk-rrr-display" class="card-value" style="font-size:1.1rem; color:var(--yellow-gold); font-weight:bold;">1:2.0</div>
+            </div>
         </div>
 
-        <button class="btn-action btn-green" onclick="calculateRiskMetrics()">Calculate Results</button>
+        <button class="btn-action btn-green" onclick="alert('Risk Metrics Loaded to Core Memory!')">Lock Risk Parameters</button>
     </div>
 
     <!-- TAB 4: PLANNER AI -->
@@ -466,7 +472,7 @@
                     <tr>
                         <th>Asset</th>
                         <th>Price</th>
-                        <th>Time</th>
+                        <th>Time Stamp</th>
                         <th>Action</th>
                         <th>Outcome</th>
                     </tr>
@@ -484,7 +490,6 @@
     <footer>Developed by: Renante Fullo</footer>
 
     <script>
-        // REPOSITORY RUNTIME VARIABLES
         let exportedDataDatabase = []; 
         let totalSimulations = 0;
         let winEntries = 0;
@@ -493,7 +498,7 @@
         let selectedTradingMode = 'DAY';
         let selectedExpectedOutcome = 'PENDING';
         let snappedCandlesList = [];
-        let historyLogsList = []; // Gagamitin para sa malinis na history restoration
+        let historyLogsList = []; 
 
         function setTradingMode(mode) {
             selectedTradingMode = mode;
@@ -508,12 +513,35 @@
             document.getElementById('out-pending').classList.toggle('active', outcome === 'PENDING');
         }
 
+        // RISK MANAGEMENT LOGIC WITH DYNAMIC RRR INDICATOR
         function calculateRiskMetrics() {
             const balance = parseFloat(document.getElementById('risk-balance').value) || 0;
             const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
-            const maxRisk = (balance * (slippage / 100)).toFixed(2);
-            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRisk).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-            alert(`Risk analysis calculated! Maximum allowed exposure is ₱${parseFloat(maxRisk).toLocaleString()}`);
+            const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 0;
+            const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 0;
+            
+            // Fixed Live Base for Reference (BDO Reference default)
+            const baseRefPrice = 155.21; 
+
+            const maxRiskAmount = (balance * (slippage / 100)).toFixed(2);
+            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRiskAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            // Compute RRR
+            const potentialLoss = Math.abs(baseRefPrice - slPrice);
+            const potentialGain = Math.abs(tpPrice - baseRefPrice);
+            
+            if (potentialLoss > 0) {
+                const ratio = (potentialGain / potentialLoss).toFixed(1);
+                const rrrBox = document.getElementById('risk-rrr-display');
+                rrrBox.innerText = `1:${ratio}`;
+                
+                // Kulayan ng green kung ligtas ang ratio (1:2 pataas)
+                if (ratio >= 2.0) {
+                    rrrBox.style.color = "var(--accent-green)";
+                } else {
+                    rrrBox.style.color = "var(--accent-orange)";
+                }
+            }
         }
 
         function resetInputBoard() {
@@ -524,7 +552,6 @@
             alert("Fields reset complete.");
         }
 
-        // AUTO-SAVE ENGINE: Sinusulat ang data sa localStorage ng browser
         function saveDataToInternalStorage() {
             localStorage.setItem('trading_exportedData', JSON.stringify(exportedDataDatabase));
             localStorage.setItem('trading_candlesList', JSON.stringify(snappedCandlesList));
@@ -534,13 +561,13 @@
             localStorage.setItem('trading_loses', loseEntries);
             localStorage.setItem('trading_profit', totalNetProfit);
 
-            // Flash alert display indicator
             const msg = document.getElementById('save-status-msg');
-            msg.style.display = 'block';
-            setTimeout(() => { msg.style.display = 'none'; }, 1000);
+            if(msg) {
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 1000);
+            }
         }
 
-        // LOAD ENGINE: Kinukuha ang data pagkabukas ng PC/Phone
         function loadDataFromInternalStorage() {
             if(localStorage.getItem('trading_totalSims')) {
                 exportedDataDatabase = JSON.parse(localStorage.getItem('trading_exportedData')) || [];
@@ -558,10 +585,9 @@
             }
         }
 
-        // CLEAR ENGINE: Ang hiling mong malinis na clear button boss
         function masterClearAllData() {
             if (confirm("Sigurado ka boss? Mabubura LAHAT ng auto-save data mo sa internal memory ng device na ito.")) {
-                localStorage.clear(); // Burado sa browser database
+                localStorage.clear(); 
 
                 exportedDataDatabase = [];
                 snappedCandlesList = [];
@@ -647,7 +673,6 @@
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-                // I-save ang log sa system array feed
                 historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
                 
                 snappedCandlesList.push({
@@ -657,7 +682,6 @@
 
                 exportedDataDatabase.unshift({ company: symbol, close });
                 
-                // Patakbuhin ang Auto-Save engine patungong internal memory
                 updateDashboardUI();
                 renderCandlesticks();
                 rebuildHistoryTableUI();
@@ -717,7 +741,7 @@
                 row.innerHTML = `
                     <td style="font-weight:bold;">${log.symbol}</td>
                     <td>₱${parseFloat(log.price).toFixed(2)}</td>
-                    <td style="color:var(--text-muted);">${log.time}</td>
+                    <td style="color:var(--yellow-gold); font-weight:700;">⏱️ ${log.time}</td>
                     <td style="font-size:0.7rem; color:var(--accent-green); font-weight:bold;">MONITOR RUN</td>
                     <td class="${log.outcome === 'WIN' ? 'log-win' : 'log-loss'}">${log.outcome}</td>
                 `;
@@ -755,15 +779,12 @@
         }
 
         function handleControlChange() { fetchLiveMarketData(false); }
+        function triggerManualCalculation(element) { fetchLiveMarketData(true); }
 
-        function triggerManualCalculation(element) {
-            fetchLiveMarketData(true); 
-        }
-
-        // Isasagawa sa tuwing magbubukas ang window panel app
         window.onload = function() { 
             loadDataFromInternalStorage();
             fetchLiveMarketData(false); 
+            calculateRiskMetrics();
         };
     </script>
 </body>
