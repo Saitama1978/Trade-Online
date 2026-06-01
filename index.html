@@ -233,6 +233,15 @@
             min-height: 220px;
         }
 
+        .save-indicator {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            margin-top: 5px;
+            font-weight: 600;
+            display: none;
+        }
+
         footer { text-align: center; padding: 25px 0 10px 0; color: var(--yellow-gold); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
     </style>
 </head>
@@ -310,22 +319,21 @@
         <div style="border-top: 1px solid var(--border-color); margin-top:20px; padding-top:10px;">
             <div class="card-label">Accumulated Array Data Count</div>
             <div style="color:var(--yellow-gold); font-size:0.9rem; font-weight:bold; margin-bottom:15px;">
-                📊 <span id="saved-nodes-count">0</span> rows ready to export
+                📊 <span id="saved-nodes-count">0</span> rows auto-saved in internal storage
             </div>
         </div>
 
         <button id="snap-btn" class="btn-action btn-green" onclick="triggerManualCalculation(this)">⚡ Snap Current Candle to List</button>
-        <div class="reset-link" onclick="resetInputBoard()">Reset Input Board</div>
+        <div id="save-status-msg" class="save-indicator">✓ Data Secured Intraday Memory</div>
+        <div class="reset-link" onclick="resetInputBoard()">Reset Input Board Fields</div>
     </div>
 
-    <!-- NEW TAB: CANDLE CHART -->
+    <!-- TAB 2: CANDLE CHART -->
     <div id="view-candle-chart" class="tab-view">
-        <div class="section-title" style="color: var(--cyan-blue);">📊 Real-Time Candlestick Feed</div>
+        <div class="section-title" style="color: var(--cyan-blue);">📊 Auto-Saved Candlestick Feed</div>
         
         <div class="chart-box">
-            <!-- Dynamic SVG Canvas Area -->
             <svg id="candle-svg-canvas" width="100%" height="200" style="background-color: #0f1016; border-radius: 6px;">
-                <!-- Grid Horizontal Baseline Guidelines -->
                 <line x1="0" y1="50" x2="100%" y2="50" stroke="#1f2232" stroke-dasharray="4"/>
                 <line x1="0" y1="100" x2="100%" y2="100" stroke="#1f2232" stroke-dasharray="4"/>
                 <line x1="0" y1="150" x2="100%" y2="150" stroke="#1f2232" stroke-dasharray="4"/>
@@ -335,11 +343,9 @@
         </div>
 
         <div class="status-card teal">
-            <div class="card-label">💡 Day Trader Golden Rules:</div>
+            <div class="card-label">🔒 Internal Memory Protection Active:</div>
             <div class="card-value" style="font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
-                • <b style="color:#fff;">Cut Loss Early:</b> Huwag hahayaang ubusin ng isang maling trade ang capital mo.<br>
-                • <b style="color:#fff;">Trend is your Friend:</b> Sumabay sa agos ng market bias (Bullish/Bearish).<br>
-                • <b style="color:#fff;">Volume & Candlestick:</b> Tumingin sa haba ng mitsa (wicks) para malaman ang rejection zones.
+                Ligtas ang iyong oras-oras na pag-plot, boss! Kahit mag-restart ang cellphone o PC, awtomatikong kukunin ng system ang huling sinave mong takbo ng mga kandila.
             </div>
         </div>
     </div>
@@ -374,7 +380,6 @@
         </div>
 
         <button class="btn-action btn-green" onclick="calculateRiskMetrics()">Calculate Results</button>
-        <button class="btn-action btn-blue" onclick="saveRiskToMatrix()">Save To Matrix</button>
     </div>
 
     <!-- TAB 4: PLANNER AI -->
@@ -479,6 +484,7 @@
     <footer>Developed by: Renante Fullo</footer>
 
     <script>
+        // REPOSITORY RUNTIME VARIABLES
         let exportedDataDatabase = []; 
         let totalSimulations = 0;
         let winEntries = 0;
@@ -486,7 +492,8 @@
         let totalNetProfit = 0;
         let selectedTradingMode = 'DAY';
         let selectedExpectedOutcome = 'PENDING';
-        let snappedCandlesList = []; // Repository para sa drowing ng kandila
+        let snappedCandlesList = [];
+        let historyLogsList = []; // Gagamitin para sa malinis na history restoration
 
         function setTradingMode(mode) {
             selectedTradingMode = mode;
@@ -494,7 +501,6 @@
             document.getElementById('mode-long').classList.toggle('active', mode === 'LONG');
         }
 
-        // CONTROL: Pagbabago ng Inaasahang Kinalabasan
         function setExpectedOutcome(outcome) {
             selectedExpectedOutcome = outcome;
             document.getElementById('out-win').classList.toggle('active', outcome === 'WIN');
@@ -510,23 +516,56 @@
             alert(`Risk analysis calculated! Maximum allowed exposure is ₱${parseFloat(maxRisk).toLocaleString()}`);
         }
 
-        function saveRiskToMatrix() {
-            alert("Risk Matrix entry locked and synced to active database!");
-        }
-
         function resetInputBoard() {
             document.getElementById('inp-open').value = "";
             document.getElementById('inp-high').value = "";
             document.getElementById('inp-low').value = "";
             document.getElementById('inp-close').value = "";
-            alert("Board cleared, waiting for next tick selection.");
+            alert("Fields reset complete.");
         }
 
-        // CONTROLLER: MASTER RESET FUNCTION
+        // AUTO-SAVE ENGINE: Sinusulat ang data sa localStorage ng browser
+        function saveDataToInternalStorage() {
+            localStorage.setItem('trading_exportedData', JSON.stringify(exportedDataDatabase));
+            localStorage.setItem('trading_candlesList', JSON.stringify(snappedCandlesList));
+            localStorage.setItem('trading_historyLogs', JSON.stringify(historyLogsList));
+            localStorage.setItem('trading_totalSims', totalSimulations);
+            localStorage.setItem('trading_wins', winEntries);
+            localStorage.setItem('trading_loses', loseEntries);
+            localStorage.setItem('trading_profit', totalNetProfit);
+
+            // Flash alert display indicator
+            const msg = document.getElementById('save-status-msg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 1000);
+        }
+
+        // LOAD ENGINE: Kinukuha ang data pagkabukas ng PC/Phone
+        function loadDataFromInternalStorage() {
+            if(localStorage.getItem('trading_totalSims')) {
+                exportedDataDatabase = JSON.parse(localStorage.getItem('trading_exportedData')) || [];
+                snappedCandlesList = JSON.parse(localStorage.getItem('trading_candlesList')) || [];
+                historyLogsList = JSON.parse(localStorage.getItem('trading_historyLogs')) || [];
+                totalSimulations = parseInt(localStorage.getItem('trading_totalSims')) || 0;
+                winEntries = parseInt(localStorage.getItem('trading_wins')) || 0;
+                loseEntries = parseInt(localStorage.getItem('trading_loses')) || 0;
+                totalNetProfit = parseFloat(localStorage.getItem('trading_profit')) || 0;
+
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                updateDashboardUI();
+                renderCandlesticks();
+                rebuildHistoryTableUI();
+            }
+        }
+
+        // CLEAR ENGINE: Ang hiling mong malinis na clear button boss
         function masterClearAllData() {
-            if (confirm("Sigurado ka boss? Mabubura lahat ng records sa Dashboard, History, at Candle Chart mo.")) {
+            if (confirm("Sigurado ka boss? Mabubura LAHAT ng auto-save data mo sa internal memory ng device na ito.")) {
+                localStorage.clear(); // Burado sa browser database
+
                 exportedDataDatabase = [];
                 snappedCandlesList = [];
+                historyLogsList = [];
                 totalSimulations = 0;
                 winEntries = 0;
                 loseEntries = 0;
@@ -558,27 +597,21 @@
                     </tr>
                 `;
                 
-                // Burahin din ang drowing ng kandila
                 document.getElementById('dynamic-candles-group').innerHTML = "";
                 document.getElementById('chart-empty-notice').style.display = "block";
                 
-                alert("Malinis na ang records mo boss! Back to zero control na.");
+                alert("Internal memory storage cleared out completely!");
             }
         }
 
-        // ENGINE LOOP: Kumukuha ng Datos ng Merkado
         async function fetchLiveMarketData(isManualSnap = false) {
             const selector = document.getElementById('asset-selector');
             if (!selector) return;
-            
             const symbol = selector.value; 
 
             const basePrices = { 
-                "MER": 590.00, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, 
-                "SM": 942.00, "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, 
-                "ICT": 350.00, "ALI": 29.00, "GLO": 1720.00, "TEL": 1340.00, 
-                "URC": 96.00, "AEV": 36.00, "AGI": 9.80, "DMCI": 11.30, 
-                "MONDE": 10.10, "CNVRG": 15.40, "SCC": 31.80, "PGOLD": 32.10 
+                "MER": 590.00, "BDO": 155.21, "BPI": 121.03, "MBT": 68.00, "SM": 942.00, 
+                "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, "ICT": 350.00, "ALI": 29.00
             };
 
             const basePrice = basePrices[symbol] || 100;
@@ -588,10 +621,8 @@
             let high = Math.max(open, close) + (Math.random() * (basePrice * 0.003));
             let low = Math.min(open, close) - (Math.random() * (basePrice * 0.003));
 
-            open = parseFloat(open).toFixed(2);
-            high = parseFloat(high).toFixed(2);
-            low = parseFloat(low).toFixed(2);
-            close = parseFloat(close).toFixed(2);
+            open = parseFloat(open).toFixed(2); high = parseFloat(high).toFixed(2);
+            low = parseFloat(low).toFixed(2); close = parseFloat(close).toFixed(2);
 
             document.getElementById('inp-open').value = open;
             document.getElementById('inp-high').value = high;
@@ -601,119 +632,96 @@
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-            const isBearish = parseFloat(close) < parseFloat(open);
-            let biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
-
-            document.getElementById('detected-pattern-name').innerText = isBearish ? "BEARISH ENGULFING" : "BULLISH ENGULFING";
-            document.getElementById('market-bias-badge').innerText = biasDirection;
-
-            const simulatedRSI = (Math.random() * 40 + 30).toFixed(1);
-            let rsiStatus = "Neutral";
-            if (simulatedRSI > 70) rsiStatus = "Overbought";
-            if (simulatedRSI < 30) rsiStatus = "Oversold";
-            document.getElementById('ai-rsi-text').innerText = `${simulatedRSI} — ${rsiStatus}`;
-
-            // CONTROL ACTION: Kapag pinindot ang snap button doon pa lang gagawa ng logs at kandila
             if (isManualSnap) {
                 totalSimulations++;
-                
                 let isWin = Math.random() > 0.4;
                 if (selectedExpectedOutcome === 'WIN') isWin = true;
                 if (selectedExpectedOutcome === 'LOSS') isWin = false;
 
-                let outcomeLabel = "PENDING";
-                let changeAmount = 0;
+                let outcomeLabel = isWin ? "WIN" : "LOSS";
+                let changeAmount = isWin ? (Math.random() * (basePrice * 0.05) + 10) : -(Math.random() * (basePrice * 0.03) + 5);
+                
+                if(isWin) { winEntries++; } else { loseEntries++; }
+                totalNetProfit += changeAmount;
+                
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-                if (isWin) {
-                    winEntries++;
-                    changeAmount = (Math.random() * (basePrice * 0.05) + 10);
-                    totalNetProfit += changeAmount;
-                    outcomeLabel = "WIN";
-                } else {
-                    loseEntries++;
-                    changeAmount = (Math.random() * (basePrice * 0.03) + 5);
-                    totalNetProfit -= changeAmount;
-                    outcomeLabel = "LOSS";
-                }
+                // I-save ang log sa system array feed
+                historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
                 
-                updateDashboardUI();
-                appendHistoryLog(symbol, close, outcomeLabel);
-                
-                // Idagdag ang candle data para iguhit sa tsart
                 snappedCandlesList.push({
-                    open: parseFloat(open),
-                    high: parseFloat(high),
-                    low: parseFloat(low),
-                    close: parseFloat(close),
-                    outcome: outcomeLabel
+                    open: parseFloat(open), high: parseFloat(high),
+                    low: parseFloat(low), close: parseFloat(close), outcome: outcomeLabel
                 });
-                renderCandlesticks();
 
                 exportedDataDatabase.unshift({ company: symbol, close });
+                
+                // Patakbuhin ang Auto-Save engine patungong internal memory
+                updateDashboardUI();
+                renderCandlesticks();
+                rebuildHistoryTableUI();
+                saveDataToInternalStorage();
+
                 document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
             }
         }
 
-        // RENDERING LOGIC: Gumuguhit ng totoong Candlestick feed gamit ang SVG
         function renderCandlesticks() {
             const group = document.getElementById('dynamic-candles-group');
             const notice = document.getElementById('chart-empty-notice');
             if (!group) return;
 
-            if (snappedCandlesList.length > 0) {
-                notice.style.display = "none";
-            }
-
-            group.innerHTML = ""; // Linisin ang lumang drawing para ma-update
+            if (snappedCandlesList.length > 0) { notice.style.display = "none"; }
+            group.innerHTML = ""; 
             
-            // Panatilihing kasya ang huling 8 na kandila para hindi lumagpas sa screen ng cp
             const maxVisible = 8;
             const startIdx = Math.max(0, snappedCandlesList.length - maxVisible);
             const visibleCandles = snappedCandlesList.slice(startIdx);
-
-            const containerWidth = 320; 
-            const spacing = containerWidth / maxVisible;
+            const spacing = 320 / maxVisible;
 
             visibleCandles.forEach((c, index) => {
                 const xPos = 30 + (index * spacing);
-                
-                // Pag-scale sa taas/baba ng kandila para magkasya sa 200px box
                 const highestPoint = Math.max(...visibleCandles.map(v => v.high));
                 const lowestPoint = Math.min(...visibleCandles.map(v => v.low));
                 const spread = (highestPoint - lowestPoint) || 1;
 
-                function scaleY(val) {
-                    return 170 - ((val - lowestPoint) / spread) * 120;
-                }
-
-                const yOpen = scaleY(c.open);
-                const yClose = scaleY(c.close);
-                const yHigh = scaleY(c.high);
-                const yLow = scaleY(c.low);
+                function scaleY(val) { return 170 - ((val - lowestPoint) / spread) * 120; }
 
                 const candleColor = c.outcome === "WIN" ? "var(--accent-green)" : "var(--accent-red)";
                 
-                const topBody = Math.min(yOpen, yClose);
-                const bodyHeight = Math.max(Math.abs(yOpen - yClose), 4); // Minimal na kapal para sa patag na doji candle
-
-                // Gagawa ng wick/mitsa (Line)
                 const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                wick.setAttribute("x1", xPos + 10);
-                wick.setAttribute("y1", yHigh);
-                wick.setAttribute("x2", xPos + 10);
-                wick.setAttribute("y2", yLow);
-                wick.setAttribute("stroke", candleColor);
-                wick.setAttribute("stroke-width", "2");
+                wick.setAttribute("x1", xPos + 10); wick.setAttribute("y1", scaleY(c.high));
+                wick.setAttribute("x2", xPos + 10); wick.setAttribute("y2", scaleY(c.low));
+                wick.setAttribute("stroke", candleColor); wick.setAttribute("stroke-width", "2");
                 group.appendChild(wick);
 
-                // Gagawa ng katawan/body (Rect)
                 const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                body.setAttribute("x", xPos);
-                body.setAttribute("y", topBody);
-                body.setAttribute("width", "20");
-                body.setAttribute("height", bodyHeight);
+                body.setAttribute("x", xPos); body.setAttribute("y", Math.min(scaleY(c.open), scaleY(c.close)));
+                body.setAttribute("width", "20"); body.setAttribute("height", Math.max(Math.abs(scaleY(c.open) - scaleY(c.close)), 4));
                 body.setAttribute("fill", candleColor);
                 group.appendChild(body);
+            });
+        }
+
+        function rebuildHistoryTableUI() {
+            const tbody = document.getElementById('history-table-body');
+            if (historyLogsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            historyLogsList.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight:bold;">${log.symbol}</td>
+                    <td>₱${parseFloat(log.price).toFixed(2)}</td>
+                    <td style="color:var(--text-muted);">${log.time}</td>
+                    <td style="font-size:0.7rem; color:var(--accent-green); font-weight:bold;">MONITOR RUN</td>
+                    <td class="${log.outcome === 'WIN' ? 'log-win' : 'log-loss'}">${log.outcome}</td>
+                `;
+                tbody.appendChild(row);
             });
         }
 
@@ -737,47 +745,6 @@
             
             const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${wr}%`;
-
-            const simulatedWinChance = totalSimulations > 0 ? Math.floor(Math.random() * 15 + 65) : 0;
-            document.getElementById('chance-win').innerText = totalSimulations > 0 ? `${simulatedWinChance}%` : "0%";
-            document.getElementById('chance-loss').innerText = totalSimulations > 0 ? `${100 - simulatedWinChance}%` : "0%";
-
-            if (totalSimulations > 0) {
-                if (simulatedWinChance > 70) {
-                    document.getElementById('matrix-remarks').innerText = "PROBABLY UNBEATABLE TRADING ENTRY SETUP";
-                    document.getElementById('big-action-text').innerText = "EXECUTE LIVE TRADE";
-                    document.getElementById('big-action-text').style.color = "var(--accent-green)";
-                } else {
-                    document.getElementById('matrix-remarks').innerText = "STABLE MARKET DATA FLOW DETECTED";
-                    document.getElementById('big-action-text').innerText = "MONITOR POSITION";
-                    document.getElementById('big-action-text').style.color = "var(--yellow-gold)";
-                }
-            }
-        }
-
-        function appendHistoryLog(symbol, price, outcome) {
-            const tbody = document.getElementById('history-table-body');
-            
-            if (totalSimulations === 1) {
-                tbody.innerHTML = "";
-            }
-
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            const currentRemarks = document.getElementById('matrix-remarks').innerText;
-            const finalAction = currentRemarks === "PROBABLY UNBEATABLE TRADING ENTRY SETUP" ? "EXECUTE LIVE TRADE" : "MONITOR POSITION";
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="font-weight:bold;">${symbol}</td>
-                <td>₱${parseFloat(price).toFixed(2)}</td>
-                <td style="color:var(--text-muted);">${timeStr}</td>
-                <td style="font-size:0.7rem; color:${finalAction === 'EXECUTE LIVE TRADE' ? 'var(--accent-green)' : 'var(--yellow-gold)'}; font-weight:bold;">${finalAction}</td>
-                <td class="${outcome === 'WIN' ? 'log-win' : 'log-loss'}">${outcome}</td>
-            `;
-            
-            tbody.insertBefore(row, tbody.firstChild);
         }
 
         function switchTab(buttonElement, tabId) {
@@ -790,12 +757,14 @@
         function handleControlChange() { fetchLiveMarketData(false); }
 
         function triggerManualCalculation(element) {
-            element.style.backgroundColor = '#15803d';
-            setTimeout(() => { element.style.backgroundColor = 'var(--accent-green)'; }, 150);
             fetchLiveMarketData(true); 
         }
 
-        window.onload = function() { fetchLiveMarketData(false); };
+        // Isasagawa sa tuwing magbubukas ang window panel app
+        window.onload = function() { 
+            loadDataFromInternalStorage();
+            fetchLiveMarketData(false); 
+        };
     </script>
 </body>
 </html>
