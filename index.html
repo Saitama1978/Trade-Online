@@ -169,7 +169,6 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
-        /* MULTI-TOGGLE BUTTON STYLE (IMAGE 1000344700.jpg) */
         .toggle-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .toggle-btn {
             flex: 1; padding: 12px; background-color: transparent; border: 1px solid var(--border-color);
@@ -180,7 +179,6 @@
         }
         .toggle-btn.active::before { content: '✓ '; color: var(--accent-purple); }
 
-        /* OUTCOME BUTTONS GROUP */
         .outcome-row { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
         .outcome-btn {
             padding: 8px 16px; background-color: transparent; border: 1px solid var(--border-color);
@@ -200,7 +198,6 @@
         .btn-blue { background-color: var(--accent-blue); color: #fff; }
         .btn-purple { background-color: var(--accent-purple); color: #000; }
 
-        /* RISK MGT SPECIFIC TITLE (IMAGE 1000344700.jpg) */
         .risk-title {
             font-size: 0.9rem; font-weight: 700; color: var(--cyan-blue); text-transform: uppercase; margin: 20px 0 15px 0; letter-spacing: 0.5px;
         }
@@ -242,7 +239,7 @@
         <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
     </div>
 
-    <!-- TAB 1: INPUT ENGINE (IMAGE 1000344700.jpg Layout) -->
+    <!-- TAB 1: INPUT ENGINE -->
     <div id="view-input" class="tab-view active">
         <div class="toggle-row">
             <button id="mode-day" class="toggle-btn active" onclick="setTradingMode('DAY')">Day Trading Mode</button>
@@ -296,14 +293,14 @@
         <div class="reset-link" onclick="resetInputBoard()">Reset Input Board</div>
     </div>
 
-    <!-- TAB 2: RISK MANAGEMENT (IMAGE 1000344700.jpg Bottom Integration) -->
+    <!-- TAB 2: RISK MANAGEMENT (FIXED TO PESO ₱) -->
     <div id="view-risk" class="tab-view">
         <div class="risk-title">Risk Management & Calculator</div>
         
         <div class="grid-2x2">
             <div class="input-group">
-                <label>Account Balance ($)</label>
-                <input type="number" id="risk-balance" class="input-control" value="10000">
+                <label>Account Balance (₱)</label>
+                <input type="number" id="risk-balance" class="input-control" value="6000">
             </div>
             <div class="input-group">
                 <label>Risk Slippage (%)</label>
@@ -322,7 +319,7 @@
 
         <div class="status-card teal" style="margin-top:20px;">
             <div class="card-label">Calculated Max Allowed Risk</div>
-            <div id="risk-allocation-display" class="card-value" style="font-size:1.3rem; color:var(--accent-green); font-weight:bold;">$100.00</div>
+            <div id="risk-allocation-display" class="card-value" style="font-size:1.3rem; color:var(--accent-green); font-weight:bold;">₱60.00</div>
         </div>
 
         <button class="btn-action btn-green" onclick="calculateRiskMetrics()">Calculate Results</button>
@@ -346,7 +343,7 @@
         </div>
     </div>
 
-    <!-- TAB 5: DASHBOARD STATS (IMAGE 1000344699.jpg Accurate Replication) -->
+    <!-- TAB 5: DASHBOARD STATS -->
     <div id="view-stats" class="tab-view">
         <div class="section-title" style="color:#fff; font-size:0.85rem; margin-bottom:15px;">Pro Account Metrics Engine</div>
         
@@ -427,8 +424,8 @@
             const balance = parseFloat(document.getElementById('risk-balance').value) || 0;
             const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
             const maxRisk = (balance * (slippage / 100)).toFixed(2);
-            document.getElementById('risk-allocation-display').innerText = `$${parseFloat(maxRisk).toLocaleString()}`;
-            alert(`Risk analysis calculated! Maximum allowed exposure is $${maxRisk}`);
+            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRisk).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            alert(`Risk analysis calculated! Maximum allowed exposure is ₱${parseFloat(maxRisk).toLocaleString()}`);
         }
 
         function saveRiskToMatrix() {
@@ -450,7 +447,7 @@
             const symbol = selector.value; 
 
             const basePrices = { 
-                "MER": 590.00, "BDO": 155.00, "BPI": 121.00, "MBT": 68.00, 
+                "MER": 590.00, "BDO": 155.12, "BPI": 121.03, "MBT": 68.00, 
                 "SM": 942.00, "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, 
                 "ICT": 350.00, "ALI": 29.00, "GLO": 1720.00, "TEL": 1340.00, 
                 "URC": 96.00, "AEV": 36.00, "AGI": 9.80, "DMCI": 11.30, 
@@ -486,7 +483,6 @@
             if (isManualSnap) {
                 totalSimulations++;
                 
-                // FORCE EXECUTE TIMING BASE ON EXPECTED OUTCOME BUTTONS
                 let isWin = Math.random() > 0.4;
                 if (selectedExpectedOutcome === 'WIN') isWin = true;
                 if (selectedExpectedOutcome === 'LOSS') isWin = false;
@@ -514,7 +510,6 @@
             const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
             document.getElementById('stat-winrate').innerText = `${wr}%`;
 
-            // RANDOM SELECTION DYNAMICS PARALEL TO SCREENSHOTS 
             const simulatedWinChance = totalSimulations > 0 ? Math.floor(Math.random() * 20 + 65) : 0;
             document.getElementById('chance-win').innerText = `${simulatedWinChance}%`;
             document.getElementById('chance-loss').innerText = totalSimulations > 0 ? `${100 - simulatedWinChance}%` : "0%";
