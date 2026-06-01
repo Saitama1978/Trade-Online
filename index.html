@@ -175,8 +175,14 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
+        /* BUTTON TOUCH FEEDBACK UPGRADE */
         .btn-action {
-            width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: opacity 0.2s;
+            width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; 
+            transition: transform 0.1s ease, filter 0.1s ease, opacity 0.2s;
+        }
+        .btn-action:active {
+            transform: scale(0.96);
+            filter: brightness(0.8);
         }
         .btn-green { background-color: var(--accent-green); color: #000; }
         .btn-blue { background-color: var(--accent-blue); color: #fff; margin-top: 15px; }
@@ -332,7 +338,7 @@
     </div>
 
     <div id="view-candle" class="tab-view">
-        <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine (MER)</div>
+        <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine</div>
         
         <div class="pattern-display-box">
             <div class="pattern-title">Detected Pattern:</div>
@@ -469,6 +475,7 @@
             document.getElementById('inp-low').value = low;
             document.getElementById('inp-close').value = close;
 
+            // FIXED SYNC BUG: Dynamic updating for header stock label & calculated price
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
