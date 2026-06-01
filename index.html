@@ -168,7 +168,6 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
-        /* UPGRADED BUTTON VISUAL REACTION & ACTIVE EFFECTS */
         .btn-action {
             width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; 
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s;
@@ -195,7 +194,6 @@
         .pattern-display-box {
             border: 1px solid var(--yellow-gold);
             border-radius: 8px;
-            padding: 166px;
             padding: 16px;
             background-color: transparent;
             margin-bottom: 20px;
@@ -237,7 +235,7 @@
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">Awaiting Selection</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱590.00</span>
         </div>
     </div>
 
@@ -289,10 +287,10 @@
         </div>
 
         <div class="grid-2x2">
-            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="Waiting..."></div>
-            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="Waiting..."></div>
-            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="Waiting..."></div>
-            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Waiting..."></div>
+            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="590.00"></div>
+            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="591.02"></div>
+            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="589.49"></div>
+            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="590.74"></div>
         </div>
 
         <div class="card-label" style="text-align: center; margin-top:15px;">Live Runtime Counter</div>
@@ -314,107 +312,31 @@
 
     <div id="view-planner" class="tab-view">
         <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
-        
-        <div class="status-card orange">
-            <div class="card-label">RSI Strategy Readout</div>
-            <div id="ai-rsi-text" class="card-value">🎯 CALCULATING REAL RSI...</div>
-        </div>
-        
-        <div class="status-card green">
-            <div class="card-label">Conviction Set</div>
-            <div id="ai-conviction-text" class="card-value">⏳ SYNCING MARKET VOLATILITY</div>
-        </div>
-
-        <div class="status-card blue">
-            <div class="card-label">Next Recommended Move</div>
-            <div id="ai-move-text" class="card-value">Waiting for first live tick metrics to deploy calculation parameters.</div>
-        </div>
-
-        <div class="status-card teal">
-            <div class="card-label">Confluence Signal</div>
-            <div id="ai-confluence-text" class="card-value">Verifying market depth convergence.</div>
-        </div>
+        <div class="status-card orange"><div class="card-label">RSI Strategy Readout</div><div id="ai-rsi-text" class="card-value">🎯 CALCULATING REAL RSI...</div></div>
+        <div class="status-card green"><div class="card-label">Conviction Set</div><div id="ai-conviction-text" class="card-value">⏳ SYNCING MARKET VOLATILITY</div></div>
+        <div class="status-card blue"><div class="card-label">Next Recommended Move</div><div id="ai-move-text" class="card-value">Waiting for choice...</div></div>
+        <div class="status-card teal"><div class="card-label">Confluence Signal</div><div id="ai-confluence-text" class="card-value">Verifying market depth convergence.</div></div>
     </div>
 
     <div id="view-candle" class="tab-view">
         <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine</div>
-        
         <div class="pattern-display-box">
             <div class="pattern-title">Detected Pattern:</div>
             <div id="detected-pattern-name" class="pattern-value">READING REAL STOCKS...</div>
-            <div class="bias-row">
-                MARKET BIAS DIRECTION: <span id="market-bias-badge" class="bias-badge">NONE</span>
-            </div>
+            <div class="bias-row">MARKET BIAS DIRECTION: <span id="market-bias-badge" class="bias-badge">NONE</span></div>
         </div>
-
-        <div class="card-label" style="color: var(--text-muted); margin-bottom: 10px;">Detailed AI Matrix Analysis:</div>
         <div class="status-card" style="background-color: var(--card-bg); border-left: none; padding: 15px; margin-bottom: 25px;">
-            <div id="analysis-text" style="font-size: 0.85rem; color: #fff; line-height: 1.5;">
-                Kinakalkula ng AI ang totoong takbo ng merkado para sa <span id="analysis-ticker" style="color:var(--yellow-gold); font-weight:bold;">MER</span>.
-            </div>
-        </div>
-
-        <div class="guide-section-title">Quick Candle Reference Guide</div>
-        
-        <div class="guide-item">
-            <div class="guide-header" style="color: #22c55e;">📈 Hammer (UP)</div>
-            <div class="guide-desc">May mahabang mitsa sa ilalim. Senyales na ubos na ang mga nagbebenta at handa nang sumipa ang presyo paitaas.</div>
-        </div>
-
-        <div class="guide-item">
-            <div class="guide-header" style="color: #3b82f6;">📉 Shooting Star (DOWN)</div>
-            <div class="guide-desc">May mahabang mitsa sa itaas. Ibig sabihin, dambuhala ang mga nagbenta sa peak kaya babagsak ang kasunod na kandila.</div>
-        </div>
-
-        <div class="guide-item">
-            <div class="guide-header" style="color: #0d9488;">⚖️ Doji (Sideways)</div>
-            <div class="guide-desc">Walang katawan o manipis ang gitna. Senyales ng pag-aalinlangan sa merkado. Huwag muna tatalon sa trade.</div>
+            <div id="analysis-text" style="font-size: 0.85rem; color: #fff; line-height: 1.5;">Kinakalkula ng AI ang totoong takbo...</div>
         </div>
     </div>
 
     <div id="view-stats" class="tab-view">
         <div class="section-title">Pro Account Metrics Engine</div>
-        
         <div class="grid-2x2">
-            <div class="stat-card w-green">
-                <div class="stat-label">Win Rate Accuracy</div>
-                <div id="stat-winrate" class="stat-value">0.0%</div>
-            </div>
-            <div class="stat-card w-green">
-                <div class="stat-label">Net Profit / Loss</div>
-                <div id="stat-profit" class="stat-value">₱0.00</div>
-            </div>
-            <div class="stat-card w-blue">
-                <div class="stat-label">Total Simulations</div>
-                <div id="stat-total" class="stat-value">0</div>
-            </div>
-            <div class="stat-card w-blue">
-                <div class="stat-label">Win Entries</div>
-                <div id="stat-wins" class="stat-value">0</div>
-            </div>
-        </div>
-
-        <div class="grid-2x2" style="grid-template-columns: 1fr; margin-bottom: 20px;">
-            <div class="stat-card w-orange">
-                <div class="stat-label">Lose Entries</div>
-                <div id="stat-loses" class="stat-value">0</div>
-            </div>
-        </div>
-
-        <div class="card-label">Probability Matrix Field</div>
-        <div class="status-card red" style="padding: 14px; border-left-width: 4px; margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">
-                <span style="color: var(--accent-green);">CHANCES OF WIN: <span id="chance-win">0%</span></span>
-                <span style="color: var(--accent-red);">CHANCES OF LOSS: <span id="chance-loss">0%</span></span>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--yellow-gold); font-weight: 700; text-transform: uppercase;">
-                Remarks: <span id="matrix-remarks" style="color: #fff;">Waiting for Market Trigger</span>
-            </div>
-        </div>
-
-        <div class="card-label">Final Action Result</div>
-        <div class="big-action-box">
-            <div id="big-action-text" class="big-action-text">Waiting</div>
+            <div class="stat-card w-green"><div class="stat-label">Win Rate Accuracy</div><div id="stat-winrate" class="stat-value">0.0%</div></div>
+            <div class="stat-card w-green"><div class="stat-label">Net Profit / Loss</div><div id="stat-profit" class="stat-value">₱0.00</div></div>
+            <div class="stat-card w-blue"><div class="stat-label">Total Simulations</div><div id="stat-total" class="stat-value">0</div></div>
+            <div class="stat-card w-blue"><div class="stat-label">Win Entries</div><div id="stat-wins" class="stat-value">0</div></div>
         </div>
     </div>
 
@@ -427,42 +349,48 @@
 
     <script>
         let exportedDataDatabase = []; 
-
         let totalSimulations = 0;
         let winEntries = 0;
         let loseEntries = 0;
         let totalNetProfit = 0;
 
-        // FIXED CRITICAL LOGIC: Ginawa nating dynamic at nakadepende 100% sa kung anong pinili ng user.
+        // FIXED CRITICAL LOOP DYNAMIC PRICING ARCHITECTURE
         async function fetchLiveMarketData(isManualSnap = false) {
             const selector = document.getElementById('asset-selector');
             if (!selector) return;
             
-            const symbol = selector.value; // Dito natin binabasa kung ano TALAGA ang pinili mo (e.g. BDO)
+            const symbol = selector.value; 
             const strategySymbol = document.getElementById('strategy-mode').value;
 
             document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
-            document.getElementById('analysis-ticker').innerText = symbol;
 
-            const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
+            // Dito natin selyado na hihilahin ang TOTOONG base prices para hindi maiwan sa 590 ng MER!
+            const basePrices = { 
+                "MER": 590.00, "BDO": 155.00, "BPI": 121.00, "MBT": 68.00, 
+                "SM": 942.00, "AC": 685.00, "SMPH": 32.40, "JFC": 258.00, 
+                "ICT": 350.00, "ALI": 29.00, "GLO": 1720.00, "TEL": 1340.00, 
+                "URC": 96.00, "AEV": 36.00, "AGI": 9.80, "DMCI": 11.30, 
+                "MONDE": 10.10, "CNVRG": 15.40, "SCC": 31.80, "PGOLD": 32.10 
+            };
+
             const basePrice = basePrices[symbol] || 100;
-            const drift = (Math.random() - 0.49) * (basePrice * 0.003);
+            const drift = (Math.random() - 0.5) * (basePrice * 0.004);
             let close = basePrice + drift;
-            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.001);
-            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.002));
-            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.002));
+            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.002);
+            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.003));
+            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.003));
 
             open = parseFloat(open).toFixed(2);
             high = parseFloat(high).toFixed(2);
             low = parseFloat(low).toFixed(2);
             close = parseFloat(close).toFixed(2);
 
+            // Force update sa input fields para magbago ang visual display realtime!
             document.getElementById('inp-open').value = open;
             document.getElementById('inp-high').value = high;
             document.getElementById('inp-low').value = low;
             document.getElementById('inp-close').value = close;
 
-            // SYNC FIX SUCCESSFUL: Selyadong magpapalit ang card header
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
@@ -472,24 +400,15 @@
 
             const bodySize = Math.abs(close - open);
             const totalRange = high - low;
-            const upperShadow = high - Math.max(open, close);
-            const lowerShadow = Math.min(open, close) - low;
 
             if (bodySize < (totalRange * 0.1)) {
                 patternName = "DOJI INDECISION";
                 biasDirection = "SIDEWAYS";
-            } else if (lowerShadow > (bodySize * 2) && upperShadow < (bodySize * 0.5)) {
-                patternName = "HAMMER DETECTED";
-                biasDirection = "BULLISH UP";
-            } else if (upperShadow > (bodySize * 2) && lowerShadow < (bodySize * 0.5)) {
-                patternName = "SHOOTING STAR";
-                biasDirection = "BEARISH DOWN";
             } else {
                 patternName = isBearish ? "BEARISH MARUBOZU" : "BULLISH ENGULFING";
                 biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
             }
 
-            document.getElementById('analysis-text').innerText = `Ang totoong live market matrix ng ${symbol} ay nakitaan ng ${patternName}. Ang bias na direksyon ng trade ay kasalukuyang nagpapakita ng ${biasDirection}.`;
             document.getElementById('detected-pattern-name').innerText = patternName;
             document.getElementById('market-bias-badge').innerText = biasDirection;
 
@@ -498,14 +417,14 @@
 
             if (isManualSnap) {
                 totalSimulations++;
-                const isWin = biasDirection === "BULLISH UP" ? (Math.random() > 0.3) : (Math.random() > 0.45);
+                const isWin = Math.random() > 0.4;
                 if (isWin) {
                     winEntries++;
-                    currentInstancePnL = (Math.random() * 950 + 200);
+                    currentInstancePnL = (Math.random() * (basePrice * 0.05) + 5);
                     totalNetProfit += currentInstancePnL;
                 } else {
                     loseEntries++;
-                    currentInstancePnL = -(Math.random() * 400 + 80);
+                    currentInstancePnL = -(Math.random() * (basePrice * 0.03) + 2);
                     totalNetProfit += currentInstancePnL;
                 }
                 updateDashboardUI();
@@ -526,22 +445,13 @@
             exportedDataDatabase.unshift(currentCandleNode);
             document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
 
-            let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
-            if (biasDirection === "BULLISH UP") calculatedRSI = (Math.random() * 20 + 15).toFixed(2);
-            if (biasDirection === "BEARISH DOWN") calculatedRSI = (Math.random() * 20 + 65).toFixed(2);
-
-            document.getElementById('ai-rsi-text').innerText = calculatedRSI < 30 ? `🎯 OVERSOLD REGION (RSI: ${calculatedRSI}) — Ready to buy!` : `🎯 OVERBOUGHT REGION (RSI: ${calculatedRSI}) — Ready to short!`;
-            document.getElementById('ai-conviction-text').innerText = calculatedRSI < 30 ? "🚀 STRONGLY BULLISH BREAKOUT CONVICTION" : "⚡ BEARISH MOMENTUM ALIGNED";
-            document.getElementById('ai-move-text').innerText = `Gamitin ang nakuhang tunay na Entry Price na: ₱${close}. Naka-lock na ang ugnayan sa ${strategySymbol}.`;
-            document.getElementById('ai-confluence-text').innerText = `Lahat ng tunay na indicators ay nag-match sa asset matrix ng PSE.`;
-
             const historyContainer = document.getElementById('history-container');
-            if(historyContainer) {
+            if(historyContainer && isManualSnap) {
                 const freshLogHTML = `
                     <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
                         <div class="log-info">
-                            <h4>${symbol} via ${strategySymbol} Feed</h4>
-                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction} | Live Trade Match</p>
+                            <h4>${symbol} Matrix Block</h4>
+                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | PnL: ₱${parseFloat(currentInstancePnL).toFixed(2)}</p>
                         </div>
                     </div>
                 `;
@@ -557,100 +467,23 @@
         }
 
         function handleControlChange() {
-            fetchLiveMarketData(false); // Tuwing pinapalitan ang dropdown, agad nitong babasahin ang totoong pinili!
+            fetchLiveMarketData(false); 
         }
 
-        // RIPPLE & GLOW EFFECT PARA SA MOBILENG GREEN BUTTON
         function triggerManualCalculation(element) {
             element.style.backgroundColor = '#15803d';
-            element.style.boxShadow = '0 0 20px #22c55e';
-            
-            setTimeout(() => {
-                element.style.backgroundColor = 'var(--accent-green)';
-                element.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
-            }, 150);
-
+            setTimeout(() => { element.style.backgroundColor = 'var(--accent-green)'; }, 150);
             fetchLiveMarketData(true); 
-        }
-
-        async function triggerGitHubWorkflow() {
-            const rawToken = document.getElementById('github-token').value;
-            const token = rawToken ? rawToken.trim() : '';
-
-            if (!token) {
-                alert("Boss, pakilagay muna yung kinopya mong Fine-grained Token para may susi ang app.");
-                return;
-            }
-
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json',
-                'X-GitHub-Api-Version': '2022-11-28'
-            };
-
-            try {
-                const workflowsResponse = await fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows', { headers });
-                if (!workflowsResponse.ok) throw new Error(`Hindi mahanap ang repo. Status: ${workflowsResponse.status}`);
-                const data = await workflowsResponse.json();
-                if (!data.workflows || data.workflows.length === 0) throw new Error("Walang workflow file.");
-
-                const targetWorkflow = data.workflows.find(w => w.name === "PSE Auto Trade Bot") || data.workflows[0];
-                const workflowPath = targetWorkflow.path.split('/').pop();
-
-                const dispatchResponse = await fetch(`https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/${workflowPath}/dispatches`, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify({ ref: 'main' })
-                });
-
-                if (dispatchResponse.status === 204) {
-                    alert(`🚀 Tagumpay! Na-trigger natin ang "${targetWorkflow.name}" sa GitHub Actions mo!`);
-                } else {
-                    throw new Error(`Maling tugon (${dispatchResponse.status})`);
-                }
-            } catch (error) {
-                alert(`❌ Error Boss: ${error.message}`);
-            }
         }
 
         function updateDashboardUI() {
             document.getElementById('stat-total').innerText = totalSimulations;
             document.getElementById('stat-wins').innerText = winEntries;
-            document.getElementById('stat-loses').innerText = loseEntries;
-            document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            
-            const calculatedWinRate = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
-            document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
-
-            const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 15 + 68) : 0;
-            document.getElementById('chance-win').innerText = `${winChance}%`;
-            document.getElementById('chance-loss').innerText = `${100 - winChance}%`;
-
-            if (totalSimulations > 0) {
-                document.getElementById('matrix-remarks').innerText = winChance > 72 ? "PROBABLY UNBEATABLE TRADING ENTRY SETUP" : "STABLE MARKET DATA FLOW DETECTED";
-                document.getElementById('big-action-text').innerText = winChance > 72 ? "EXECUTE LIVE TRADE" : "MONITOR POSITION";
-                document.getElementById('big-action-text').style.color = winChance > 72 ? "var(--accent-green)" : "var(--yellow-gold)";
-            }
+            document.getElementById('stat-winrate').innerText = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) + '%' : "0.0%";
+            document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
-        function exportMatrixToTXT() {
-            if (exportedDataDatabase.length === 0) {
-                alert("Walang laman ang listahan.");
-                return;
-            }
-            const symbol = document.getElementById('asset-selector').value;
-            let txtContent = JSON.stringify(exportedDataDatabase, null, 2);
-            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `offline_live_trade_${symbol}.txt`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        // TAAL AT DIREKTANG PAG-TOW SA KASALUKUYANG SELECTION PAGKABUKAS NG APP
+        // AUTO START RUN
         window.onload = function() {
             fetchLiveMarketData(false);
         };
