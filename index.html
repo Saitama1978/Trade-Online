@@ -800,4 +800,250 @@
         };
     </script>
 </body>
+    <script>
+        let exportedDataDatabase = []; 
+        let totalSimulations = 0;
+        let winEntries = 0;
+        let loseEntries = 0;
+        let totalNetProfit = 0;
+        let selectedTradingMode = 'DAY';
+        let selectedExpectedOutcome = 'PENDING';
+        let snappedCandlesList = [];
+        let historyLogsList = []; 
+
+        function setTradingMode(mode) {
+            selectedTradingMode = mode;
+            document.getElementById('mode-day').classList.toggle('active', mode === 'DAY');
+            document.getElementById('mode-long').classList.toggle('active', mode === 'LONG');
+        }
+
+        function setExpectedOutcome(outcome) {
+            selectedExpectedOutcome = outcome;
+            document.getElementById('out-win').classList.toggle('active', outcome === 'WIN');
+            document.getElementById('out-loss').classList.toggle('active', outcome === 'LOSS');
+            document.getElementById('out-pending').classList.toggle('active', outcome === 'PENDING');
+        }
+
+        function calculateRiskMetrics() {
+            const balance = parseFloat(document.getElementById('risk-balance').value) || 0;
+            const slippage = parseFloat(document.getElementById('risk-slippage').value) || 0;
+            const slPrice = parseFloat(document.getElementById('risk-sl-price').value) || 0;
+            const tpPrice = parseFloat(document.getElementById('risk-tp-price').value) || 0;
+            const baseRefPrice = parseFloat(document.getElementById('inp-close').value) || 114.10; 
+
+            const maxRiskAmount = (balance * (slippage / 100)).toFixed(2);
+            document.getElementById('risk-allocation-display').innerText = `₱${parseFloat(maxRiskAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            const potentialLoss = Math.abs(baseRefPrice - slPrice);
+            const potentialGain = Math.abs(tpPrice - baseRefPrice);
+            
+            if (potentialLoss > 0) {
+                const ratio = (potentialGain / potentialLoss).toFixed(1);
+                const rrrBox = document.getElementById('risk-rrr-display');
+                rrrBox.innerText = `1:${ratio}`;
+                if (ratio >= 2.0) { rrrBox.style.color = "var(--accent-green)"; } else { rrrBox.style.color = "var(--accent-orange)"; }
+            }
+        }
+
+        function resetInputBoard() {
+            document.getElementById('inp-open').value = "";
+            document.getElementById('inp-high').value = "";
+            document.getElementById('inp-low').value = "";
+            document.getElementById('inp-close').value = "";
+            alert("Fields reset complete.");
+        }
+
+        function saveDataToInternalStorage() {
+            localStorage.setItem('trading_exportedData', JSON.stringify(exportedDataDatabase));
+            localStorage.setItem('trading_candlesList', JSON.stringify(snappedCandlesList));
+            localStorage.setItem('trading_historyLogs', JSON.stringify(historyLogsList));
+            localStorage.setItem('trading_totalSims', totalSimulations);
+            localStorage.setItem('trading_wins', winEntries);
+            localStorage.setItem('trading_loses', loseEntries);
+            localStorage.setItem('trading_profit', totalNetProfit);
+
+            const msg = document.getElementById('save-status-msg');
+            if(msg) { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 1000); }
+        }
+
+        function loadDataFromInternalStorage() {
+            if(localStorage.getItem('trading_totalSims')) {
+                exportedDataDatabase = JSON.parse(localStorage.getItem('trading_exportedData')) || [];
+                snappedCandlesList = JSON.parse(localStorage.getItem('trading_candlesList')) || [];
+                historyLogsList = JSON.parse(localStorage.getItem('trading_historyLogs')) || [];
+                totalSimulations = parseInt(localStorage.getItem('trading_totalSims')) || 0;
+                winEntries = parseInt(localStorage.getItem('trading_wins')) || 0;
+                loseEntries = parseInt(localStorage.getItem('trading_loses')) || 0;
+                totalNetProfit = parseFloat(localStorage.getItem('trading_profit')) || 0;
+
+                document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                updateDashboardUI();
+                renderCandlesticks();
+                rebuildHistoryTableUI();
+            }
+        }
+
+        function masterClearAllData() {
+            if (confirm("Sigurado ka boss? Mabubura LAHAT sa memory.")) {
+                localStorage.clear(); 
+                exportedDataDatabase = []; snappedCandlesList = []; historyLogsList = [];
+                totalSimulations = 0; winEntries = 0; loseEntries = 0; totalNetProfit = 0;
+                document.getElementById('stat-total').innerText = "0";
+                document.getElementById('stat-wins').innerText = "0";
+                document.getElementById('stat-loses').innerText = "0";
+                const profitDisplay = document.getElementById('stat-profit');
+                profitDisplay.innerText = "₱0.00"; profitDisplay.style.color = "var(--text-main)";
+                document.getElementById('profit-card-border').style.borderLeftColor = "var(--border-color)";
+                document.getElementById('stat-winrate').innerText = "0.0%";
+                document.getElementById('saved-nodes-count').innerText = "0";
+                document.getElementById('chance-win').innerText = "0%";
+                document.getElementById('chance-loss').innerText = "0%";
+                document.getElementById('matrix-remarks').innerText = "WAITING FOR MARKET TRIGGER";
+                const actionBox = document.getElementById('big-action-text');
+                actionBox.innerText = "WAITING"; actionBox.style.color = "var(--yellow-gold)";
+                document.getElementById('history-table-body').innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No historical data captured yet.</td></tr>`;
+                document.getElementById('dynamic-candles-group').innerHTML = "";
+                document.getElementById('chart-empty-notice').style.display = "block";
+                alert("Storage cleared!");
+            }
+        }
+
+        async function fetchLiveMarketData(isManualSnap = false) {
+            const selector = document.getElementById('asset-selector');
+            if (!selector) return;
+            const symbol = selector.value; 
+            document.getElementById('live-asset-price').innerText = "⚡ Loading...";
+
+            try {
+                const ticker = `${symbol}.PS`;
+                const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                const result = data.chart.result[0];
+                const meta = result.meta;
+                const quote = result.indicators.quote[0];
+                
+                let close = meta.regularMarketPrice;
+                let open = quote.open[0] || close;
+                let high = quote.high[0] || close;
+                let low = quote.low[0] || close;
+
+                open = parseFloat(open).toFixed(2); high = parseFloat(high).toFixed(2);
+                low = parseFloat(low).toFixed(2); close = parseFloat(close).toFixed(2);
+
+                document.getElementById('inp-open').value = open;
+                document.getElementById('inp-high').value = high;
+                document.getElementById('inp-low').value = low;
+                document.getElementById('inp-close').value = close;
+                document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
+                document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+                calculateRiskMetrics();
+
+                if (isManualSnap) {
+                    totalSimulations++;
+                    let isWin = Math.random() > 0.4;
+                    if (selectedExpectedOutcome === 'WIN') isWin = true;
+                    if (selectedExpectedOutcome === 'LOSS') isWin = false;
+
+                    let outcomeLabel = isWin ? "WIN" : "LOSS";
+                    let changeAmount = isWin ? (Math.random() * (parseFloat(close) * 0.05) + 10) : -(Math.random() * (parseFloat(close) * 0.03) + 5);
+                    
+                    if(isWin) { winEntries++; } else { loseEntries++; }
+                    totalNetProfit += changeAmount;
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                    historyLogsList.unshift({ symbol, price: close, time: timeStr, outcome: outcomeLabel });
+                    snappedCandlesList.push({ open: parseFloat(open), high: parseFloat(high), low: parseFloat(low), close: parseFloat(close), outcome: outcomeLabel });
+                    exportedDataDatabase.unshift({ company: symbol, close });
+                    
+                    updateDashboardUI(); renderCandlesticks(); rebuildHistoryTableUI(); saveDataToInternalStorage();
+                    document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('live-asset-price').innerText = "❌ Error";
+            }
+        }
+
+        function renderCandlesticks() {
+            const group = document.getElementById('dynamic-candles-group');
+            const notice = document.getElementById('chart-empty-notice');
+            if (!group) return;
+            if (snappedCandlesList.length > 0) { notice.style.display = "none"; }
+            group.innerHTML = ""; 
+            const maxVisible = 8;
+            const startIdx = Math.max(0, snappedCandlesList.length - maxVisible);
+            const visibleCandles = snappedCandlesList.slice(startIdx);
+            const spacing = 320 / maxVisible;
+
+            visibleCandles.forEach((c, index) => {
+                const xPos = 30 + (index * spacing);
+                const highestPoint = Math.max(...visibleCandles.map(v => v.high));
+                const lowestPoint = Math.min(...visibleCandles.map(v => v.low));
+                const spread = (highestPoint - lowestPoint) || 1;
+                function scaleY(val) { return 170 - ((val - lowestPoint) / spread) * 120; }
+                const candleColor = c.outcome === "WIN" ? "var(--accent-green)" : "var(--accent-red)";
+                
+                const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                wick.setAttribute("x1", xPos + 10); wick.setAttribute("y1", scaleY(c.high));
+                wick.setAttribute("x2", xPos + 10); wick.setAttribute("y2", scaleY(c.low));
+                wick.setAttribute("stroke", candleColor); wick.setAttribute("stroke-width", "2");
+                group.appendChild(wick);
+
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                body.setAttribute("x", xPos); body.setAttribute("y", Math.min(scaleY(c.open), scaleY(c.close)));
+                body.setAttribute("width", "20"); body.setAttribute("height", Math.max(Math.abs(scaleY(c.open) - scaleY(c.close)), 4));
+                body.setAttribute("fill", candleColor);
+                group.appendChild(body);
+            });
+        }
+
+        function rebuildHistoryTableUI() {
+            const tbody = document.getElementById('history-table-body');
+            if (historyLogsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No data yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = "";
+            historyLogsList.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td style="font-weight:bold;">${log.symbol}</td><td>₱${parseFloat(log.price).toFixed(2)}</td><td style="color:var(--yellow-gold); font-weight:700;">⏱️ ${log.time}</td><td style="font-size:0.7rem; color:var(--accent-green); font-weight:bold;">MONITOR RUN</td><td class="${log.outcome === 'WIN' ? 'log-win' : 'log-loss'}">${log.outcome}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateDashboardUI() {
+            document.getElementById('stat-total').innerText = totalSimulations;
+            document.getElementById('stat-wins').innerText = winEntries;
+            document.getElementById('stat-loses').innerText = loseEntries;
+            const profitDisplay = document.getElementById('stat-profit');
+            const borderCard = document.getElementById('profit-card-border');
+            
+            if (totalNetProfit >= 0) {
+                profitDisplay.innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-green)"; borderCard.style.borderLeftColor = "var(--accent-green)";
+            } else {
+                profitDisplay.innerText = `-₱${Math.abs(totalNetProfit).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = "var(--accent-red)"; borderCard.style.borderLeftColor = "var(--accent-red)";
+            }
+            const wr = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
+            document.getElementById('stat-winrate').innerText = `${wr}%`;
+        }
+
+        function switchTab(buttonElement, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+            buttonElement.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        }
+
+        function handleControlChange() { fetchLiveMarketData(false); }
+        function triggerManualCalculation(element) { fetchLiveMarketData(true); }
+
+        window.onload = function() { loadDataFromInternalStorage(); fetchLiveMarketData(false); };
+    </script>
+</body>
 </html>
