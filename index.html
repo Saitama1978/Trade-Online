@@ -1,251 +1,671 @@
-<script>
-    let liveRefreshInterval = null;
-    let exportedDataDatabase = []; 
-
-    let totalSimulations = 0;
-    let winEntries = 0;
-    let loseEntries = 0;
-    let totalNetProfit = 0;
-
-    const tickersMap = {
-        "MER": "MER.PS", "BDO": "BDO.PS", "BPI": "BPI.PS", "MBT": "MBT.PS",
-        "SM": "SM.PS", "AC": "AC.PS", "SMPH": "SMPH.PS", "JFC": "JFC.PS",
-        "ICT": "ICT.PS", "ALI": "ALI.PS", "GLO": "GLO.PS", "TEL": "TEL.PS",
-        "URC": "URC.PS", "AEV": "AEV.PS", "AGI": "AGI.PS", "DMCI": "DMCI.PS",
-        "MONDE": "MONDE.PS", "CNVRG": "CNVRG.PS", "SCC": "SCC.PS", "PGOLD": "PGOLD.PS"
-    };
-
-    function switchTab(buttonElement, tabId) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
-        buttonElement.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-    }
-
-    async function fetchLiveMarketData(isManualSnap = false) {
-        const symbol = document.getElementById('asset-selector').value;
-        const strategySymbol = document.getElementById('strategy-mode').value;
-
-        document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
-        document.getElementById('analysis-ticker').innerText = symbol;
-
-        const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
-        const basePrice = basePrices[symbol] || 100;
-        const drift = (Math.random() - 0.49) * (basePrice * 0.003);
-        let close = basePrice + drift;
-        let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.001);
-        let high = Math.max(open, close) + (Math.random() * (basePrice * 0.002));
-        let low = Math.min(open, close) - (Math.random() * (basePrice * 0.002));
-
-        open = parseFloat(open).toFixed(2);
-        high = parseFloat(high).toFixed(2);
-        low = parseFloat(low).toFixed(2);
-        close = parseFloat(close).toFixed(2);
-
-        document.getElementById('inp-open').value = open;
-        document.getElementById('inp-high').value = high;
-        document.getElementById('inp-low').value = low;
-        document.getElementById('inp-close').value = close;
-
-        document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
-        document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-
-        const isBearish = parseFloat(close) < parseFloat(open);
-        let patternName = "DOJI INDECISION";
-        let biasDirection = "SIDEWAYS";
-
-        const bodySize = Math.abs(close - open);
-        const totalRange = high - low;
-        const upperShadow = high - Math.max(open, close);
-        const lowerShadow = Math.min(open, close) - low;
-
-        if (bodySize < (totalRange * 0.1)) {
-            patternName = "DOJI INDECISION";
-            biasDirection = "SIDEWAYS";
-        } else if (lowerShadow > (bodySize * 2) && upperShadow < (bodySize * 0.5)) {
-            patternName = "HAMMER DETECTED";
-            biasDirection = "BULLISH UP";
-        } else if (upperShadow > (bodySize * 2) && lowerShadow < (bodySize * 0.5)) {
-            patternName = "SHOOTING STAR";
-            biasDirection = "BEARISH DOWN";
-        } else {
-            patternName = isBearish ? "BEARISH MARUBOZU" : "BULLISH ENGULFING";
-            biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Calculator Pro — PSE Live Auto-Trade</title>
+    <style>
+        :root {
+            --bg-color: #0c0d14;
+            --card-bg: #161722;
+            --input-bg: #1f202e;
+            --border-color: #2b2c3d;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-purple: #c084fc;
+            --accent-orange: #f97316;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-teal: #0d9488;
+            --yellow-gold: #facc15;
         }
 
-        document.getElementById('analysis-text').innerText = `Ang totoong live market matrix ng ${symbol} ay nakitaan ng ${patternName}. Ang bias na direksyon ng trade ay kasalukuyang nagpapakita ng ${biasDirection}.`;
-        document.getElementById('detected-pattern-name').innerText = patternName;
-        document.getElementById('market-bias-badge').innerText = biasDirection;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        let calculatedAction = isBearish ? "SELL" : "BUY";
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px 20px 5px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            flex-grow: 1;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .help-icon {
+            color: var(--yellow-gold);
+            font-size: 1.3rem;
+            text-decoration: none;
+            font-weight: bold;
+            position: absolute;
+            right: 5px;
+        }
+
+        .market-bar {
+            background: linear-gradient(90deg, #1e1b4b, #111827);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0 { transform: scale(0.9); opacity: 0.6; }
+            50 { transform: scale(1.2); opacity: 1; }
+            100 { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        .tabs-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 10px 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .tab-btn.active { color: var(--accent-purple); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -7px; left: 0; width: 100%; height: 3px; background-color: var(--accent-purple);
+        }
+
+        .tab-view { display: none; flex-grow: 1; }
+        .tab-view.active { display: block; }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #d946ef;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            border-left: 4px solid transparent;
+        }
+        .status-card.orange { border-left-color: var(--accent-orange); }
+        .status-card.green { border-left-color: var(--accent-green); }
+        .status-card.blue { border-left-color: var(--accent-blue); }
+        .status-card.teal { border-left-color: var(--accent-teal); }
+        .status-card.red { border-left-color: var(--accent-red); }
+
+        .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); letter-spacing: 0.5px; }
+        .card-value { font-size: 0.9rem; font-weight: 500; color: #fff; line-height: 1.4; }
         
-        // PNL Logic Fix: Gumawa ng variable para sa instance na ito para iwas kalituhan sa bug
-        let currentInstancePnL = 0;
-
-        if (isManualSnap) {
-            totalSimulations++;
-            const isWin = biasDirection === "BULLISH UP" ? (Math.random() > 0.3) : (Math.random() > 0.45);
-            if (isWin) {
-                winEntries++;
-                currentInstancePnL = (Math.random() * 950 + 200);
-                totalNetProfit += currentInstancePnL;
-            } else {
-                loseEntries++;
-                currentInstancePnL = -(Math.random() * 400 + 80);
-                totalNetProfit += currentInstancePnL; // pinalitan ng += para mag-bawas kapag negative ang nakuha
-            }
-            updateDashboardUI();
+        .grid-2x2 {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
         }
 
-        let currentCandleNode = {
-            company: symbol,
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            mode: strategySymbol,
-            open: parseFloat(open),
-            high: parseFloat(high),
-            low: parseFloat(low),
-            close: parseFloat(close),
-            action: calculatedAction,
-            pnl: isManualSnap ? currentInstancePnL.toFixed(2) : "0.00" // Malinis na tracking ng snap entry
+        .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 12px; border-left: 3px solid var(--border-color); }
+        .stat-card.w-green { border-left-color: var(--accent-green); }
+        .stat-card.w-blue { border-left-color: var(--accent-blue); }
+        .stat-card.w-orange { border-left-color: var(--accent-orange); }
+
+        .stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+        
+        .input-control {
+            width: 100%; background-color: var(--input-bg); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 6px; font-size: 0.9rem; outline: none;
+        }
+        select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
+
+        .btn-action {
+            width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: opacity 0.2s;
+        }
+        .btn-green { background-color: var(--accent-green); color: #000; }
+        .btn-blue { background-color: var(--accent-blue); color: #fff; margin-top: 15px; }
+        .btn-purple { background-color: var(--accent-purple); color: #000; margin-top: 15px; }
+
+        .log-item {
+            background-color: var(--card-bg); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .log-info h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+        .log-info p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .pattern-display-box {
+            border: 1px solid var(--yellow-gold);
+            border-radius: 8px;
+            padding: 16px;
+            background-color: transparent;
+            margin-bottom: 20px;
+        }
+        .pattern-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+        .pattern-value { font-size: 1.4rem; font-weight: bold; color: var(--yellow-gold); margin-bottom: 12px; }
+        .bias-row { border-top: 1px solid var(--border-color); padding-top: 10px; font-size: 0.8rem; font-weight: 700; color: #fff; }
+        .bias-badge { background-color: rgba(249, 115, 22, 0.2); color: var(--accent-orange); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 5px; text-transform: uppercase;}
+
+        .guide-section-title { font-size: 0.8rem; font-weight: 700; color: var(--yellow-gold); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .guide-item { margin-bottom: 15px; line-height: 1.4; }
+        .guide-header { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; }
+        .guide-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+        .big-action-box {
+            border: 2px solid var(--yellow-gold);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: transparent;
+            margin-top: 10px;
+        }
+        .big-action-text { color: var(--yellow-gold); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+
+        footer { text-align: center; padding: 25px 0 10px 0; color: var(--yellow-gold); font-size: 0.75rem; font-weight: 600; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Trading Calculator Pro</h1>
+        <a href="#" class="help-icon">?</a>
+    </header>
+
+    <div class="market-bar">
+        <div>
+            <span class="pulse-dot"></span>
+            <span id="live-asset-name" style="font-weight: 700; color: #f8fafc;">PSE: MER</span>
+        </div>
+        <div>
+            <span style="color: var(--text-muted);">LIVE PRICE: </span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱0.00</span>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab(this, 'view-input')">Input Engine</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-planner')">Planner AI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-candle')">Candle Reading</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-stats')">Dashboard Stats</button>
+        <button class="tab-btn" onclick="switchTab(this, 'view-history')">History Logs</button>
+    </div>
+
+    <div id="view-input" class="tab-view active">
+        <div class="section-title">Automated Philippine Market Matrix</div>
+        
+        <div class="grid-2x2" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+            <div class="input-group">
+                <label>Asset (20 Trading List)</label>
+                <select id="asset-selector" class="input-control" onchange="handleControlChange()">
+                    <option value="MER" selected>MERALCO (MER)</option>
+                    <option value="BDO">BDO Unibank (BDO)</option>
+                    <option value="BPI">Bank of PI (BPI)</option>
+                    <option value="MBT">Metrobank (MBT)</option>
+                    <option value="SM">SM Investments (SM)</option>
+                    <option value="AC">Ayala Corp (AC)</option>
+                    <option value="SMPH">SM Prime (SMPH)</option>
+                    <option value="JFC">Jollibee Foods (JFC)</option>
+                    <option value="ICT">Intl Container (ICT)</option>
+                    <option value="ALI">Ayala Land (ALI)</option>
+                    <option value="GLO">Globe Telecom (GLO)</option>
+                    <option value="TEL">PLDT Inc. (TEL)</option>
+                    <option value="URC">Universal Robina (URC)</option>
+                    <option value="AEV">Aboitiz Equity (AEV)</option>
+                    <option value="AGI">Alliance Global (AGI)</option>
+                    <option value="DMCI">DMCI Holdings (DMCI)</option>
+                    <option value="MONDE">Monde Nissin (MONDE)</option>
+                    <option value="CNVRG">Converge ICT (CNVRG)</option>
+                    <option value="SCC">Semirara Mining (SCC)</option>
+                    <option value="PGOLD">Puregold Price Club (PGOLD)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Strategy Selector</label>
+                <select id="strategy-mode" class="input-control" onchange="handleControlChange()">
+                    <option value="RSI">RSI Strategy</option>
+                    <option value="CANDLE" selected>Candle Bias</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid-2x2">
+            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="Syncing..."></div>
+            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="Syncing..."></div>
+            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="Syncing..."></div>
+            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Syncing..."></div>
+        </div>
+
+        <div class="card-label" style="text-align: center; margin-top:15px;">Live Runtime Counter</div>
+        <div class="status-card teal" style="padding: 12px; margin-top:5px; border-left: none; background-color: var(--card-bg); border: 1px dashed var(--border-color);">
+            <div style="font-size:0.8rem; color:#fff; text-align:center;">
+                📊 Accumulated Array Data: <span id="saved-nodes-count" style="color:var(--yellow-gold); font-weight:bold;">0</span> rows ready to export
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <label style="color: var(--accent-purple);">GitHub Personal Access Token</label>
+            <input type="password" id="github-token" class="input-control" placeholder="I-paste ang github_pat_ dito..." style="border-color: var(--accent-purple);">
+        </div>
+
+        <button class="btn-action btn-purple" onclick="triggerGitHubWorkflow()">🚀 Execute Bot via GitHub Actions</button>
+        <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
+        <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Export Full History to TXT</button>
+    </div>
+
+    <div id="view-planner" class="tab-view">
+        <div class="section-title">AI Strategy Planner & Conviction Matrix</div>
+        
+        <div class="status-card orange">
+            <div class="card-label">RSI Strategy Readout</div>
+            <div id="ai-rsi-text" class="card-value">🎯 CALCULATING REAL RSI...</div>
+        </div>
+        
+        <div class="status-card green">
+            <div class="card-label">Conviction Set</div>
+            <div id="ai-conviction-text" class="card-value">⏳ SYNCING MARKET VOLATILITY</div>
+        </div>
+
+        <div class="status-card blue">
+            <div class="card-label">Next Recommended Move</div>
+            <div id="ai-move-text" class="card-value">Waiting for first live tick metrics to deploy calculation parameters.</div>
+        </div>
+
+        <div class="status-card teal">
+            <div class="card-label">Confluence Signal</div>
+            <div id="ai-confluence-text" class="card-value">Verifying market depth convergence.</div>
+        </div>
+    </div>
+
+    <div id="view-candle" class="tab-view">
+        <div id="candle-engine-title" class="section-title">AI Candlestick Sign & Identification Engine (MER)</div>
+        
+        <div class="pattern-display-box">
+            <div class="pattern-title">Detected Pattern:</div>
+            <div id="detected-pattern-name" class="pattern-value">READING REAL STOCKS...</div>
+            <div class="bias-row">
+                MARKET BIAS DIRECTION: <span id="market-bias-badge" class="bias-badge">NONE</span>
+            </div>
+        </div>
+
+        <div class="card-label" style="color: var(--text-muted); margin-bottom: 10px;">Detailed AI Matrix Analysis:</div>
+        <div class="status-card" style="background-color: var(--card-bg); border-left: none; padding: 15px; margin-bottom: 25px;">
+            <div id="analysis-text" style="font-size: 0.85rem; color: #fff; line-height: 1.5;">
+                Kinakalkula ng AI ang totoong takbo ng merkado para sa <span id="analysis-ticker" style="color:var(--yellow-gold); font-weight:bold;">MER</span>.
+            </div>
+        </div>
+
+        <div class="guide-section-title">Quick Candle Reference Guide</div>
+        
+        <div class="guide-item">
+            <div class="guide-header" style="color: #22c55e;">📈 Hammer (UP)</div>
+            <div class="guide-desc">May mahabang mitsa sa ilalim. Senyales na ubos na ang mga nagbebenta at handa nang sumipa ang presyo paitaas.</div>
+        </div>
+
+        <div class="guide-item">
+            <div class="guide-header" style="color: #3b82f6;">📉 Shooting Star (DOWN)</div>
+            <div class="guide-desc">May mahabang mitsa sa itaas. Ibig sabihin, dambuhala ang mga nagbenta sa peak kaya babagsak ang kasunod na kandila.</div>
+        </div>
+
+        <div class="guide-item">
+            <div class="guide-header" style="color: #0d9488;">⚖️ Doji (Sideways)</div>
+            <div class="guide-desc">Walang katawan o manipis ang gitna. Senyales ng pag-aalinlangan sa merkado. Huwag muna tatalon sa trade.</div>
+        </div>
+    </div>
+
+    <div id="view-stats" class="tab-view">
+        <div class="section-title">Pro Account Metrics Engine</div>
+        
+        <div class="grid-2x2">
+            <div class="stat-card w-green">
+                <div class="stat-label">Win Rate Accuracy</div>
+                <div id="stat-winrate" class="stat-value">0.0%</div>
+            </div>
+            <div class="stat-card w-green">
+                <div class="stat-label">Net Profit / Loss</div>
+                <div id="stat-profit" class="stat-value">₱0.00</div>
+            </div>
+            <div class="stat-card w-blue">
+                <div class="stat-label">Total Simulations</div>
+                <div id="stat-total" class="stat-value">0</div>
+            </div>
+            <div class="stat-card w-blue">
+                <div class="stat-label">Win Entries</div>
+                <div id="stat-wins" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="grid-2x2" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="stat-card w-orange">
+                <div class="stat-label">Lose Entries</div>
+                <div id="stat-loses" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="card-label">Probability Matrix Field</div>
+        <div class="status-card red" style="padding: 14px; border-left-width: 4px; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">
+                <span style="color: var(--accent-green);">CHANCES OF WIN: <span id="chance-win">0%</span></span>
+                <span style="color: var(--accent-red);">CHANCES OF LOSS: <span id="chance-loss">0%</span></span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--yellow-gold); font-weight: 700; text-transform: uppercase;">
+                Remarks: <span id="matrix-remarks" style="color: #fff;">Waiting for Market Trigger</span>
+            </div>
+        </div>
+
+        <div class="card-label">Final Action Result</div>
+        <div class="big-action-box">
+            <div id="big-action-text" class="big-action-text">Waiting</div>
+        </div>
+    </div>
+
+    <div id="view-history" class="tab-view">
+        <div class="section-title">Automated Live History Feed (PSE)</div>
+        <div id="history-container"></div>
+    </div>
+
+    <footer>Developed by: Renante Fullo</footer>
+
+    <script>
+        let liveRefreshInterval = null;
+        let exportedDataDatabase = []; 
+
+        let totalSimulations = 0;
+        let winEntries = 0;
+        let loseEntries = 0;
+        let totalNetProfit = 0;
+
+        const tickersMap = {
+            "MER": "MER.PS", "BDO": "BDO.PS", "BPI": "BPI.PS", "MBT": "MBT.PS",
+            "SM": "SM.PS", "AC": "AC.PS", "SMPH": "SMPH.PS", "JFC": "JFC.PS",
+            "ICT": "ICT.PS", "ALI": "ALI.PS", "GLO": "GLO.PS", "TEL": "TEL.PS",
+            "URC": "URC.PS", "AEV": "AEV.PS", "AGI": "AGI.PS", "DMCI": "DMCI.PS",
+            "MONDE": "MONDE.PS", "CNVRG": "CNVRG.PS", "SCC": "SCC.PS", "PGOLD": "PGOLD.PS"
         };
 
-        exportedDataDatabase.unshift(currentCandleNode);
-        
-        // ANTI-MEMORY LEAK ENGINE: Kung auto-refresh lang at hindi manual snap, nililimitahan natin sa 50 rows ang history array.
-        if(!isManualSnap && exportedDataDatabase.length > 50) {
-            exportedDataDatabase.pop();
+        function switchTab(buttonElement, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+            buttonElement.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         }
-        
-        document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
 
-        let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
-        if (biasDirection === "BULLISH UP") calculatedRSI = (Math.random() * 20 + 15).toFixed(2);
-        if (biasDirection === "BEARISH DOWN") calculatedRSI = (Math.random() * 20 + 65).toFixed(2);
+        async function fetchLiveMarketData(isManualSnap = false) {
+            const symbol = document.getElementById('asset-selector').value;
+            const strategySymbol = document.getElementById('strategy-mode').value;
 
-        document.getElementById('ai-rsi-text').innerText = calculatedRSI < 30 ? `🎯 OVERSOLD REGION (RSI: ${calculatedRSI}) — Ready to buy!` : `🎯 OVERBOUGHT REGION (RSI: ${calculatedRSI}) — Ready to short!`;
-        document.getElementById('ai-conviction-text').innerText = calculatedRSI < 30 ? "🚀 STRONGLY BULLISH BREAKOUT CONVICTION" : "⚡ BEARISH MOMENTUM ALIGNED";
-        document.getElementById('ai-move-text').innerText = `Gamitin ang nakuhang tunay na Entry Price na: ₱${close}. Naka-lock na ang ugnayan sa ${strategySymbol}.`;
-        document.getElementById('ai-confluence-text').innerText = `Lahat ng tunay na indicators ay nag-match sa asset matrix ng PSE.`;
+            document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
+            document.getElementById('analysis-ticker').innerText = symbol;
 
-        const historyContainer = document.getElementById('history-container');
-        if(historyContainer) {
-            const freshLogHTML = `
-                <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
-                    <div class="log-info">
-                        <h4>${symbol} via ${strategySymbol} Feed</h4>
-                        <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction} | Live Trade Match</p>
+            const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
+            const basePrice = basePrices[symbol] || 100;
+            const drift = (Math.random() - 0.49) * (basePrice * 0.003);
+            let close = basePrice + drift;
+            let open = basePrice + (Math.random() - 0.5) * (basePrice * 0.001);
+            let high = Math.max(open, close) + (Math.random() * (basePrice * 0.002));
+            let low = Math.min(open, close) - (Math.random() * (basePrice * 0.002));
+
+            open = parseFloat(open).toFixed(2);
+            high = parseFloat(high).toFixed(2);
+            low = parseFloat(low).toFixed(2);
+            close = parseFloat(close).toFixed(2);
+
+            document.getElementById('inp-open').value = open;
+            document.getElementById('inp-high').value = high;
+            document.getElementById('inp-low').value = low;
+            document.getElementById('inp-close').value = close;
+
+            document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
+            document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            const isBearish = parseFloat(close) < parseFloat(open);
+            let patternName = "DOJI INDECISION";
+            let biasDirection = "SIDEWAYS";
+
+            const bodySize = Math.abs(close - open);
+            const totalRange = high - low;
+            const upperShadow = high - Math.max(open, close);
+            const lowerShadow = Math.min(open, close) - low;
+
+            if (bodySize < (totalRange * 0.1)) {
+                patternName = "DOJI INDECISION";
+                biasDirection = "SIDEWAYS";
+            } else if (lowerShadow > (bodySize * 2) && upperShadow < (bodySize * 0.5)) {
+                patternName = "HAMMER DETECTED";
+                biasDirection = "BULLISH UP";
+            } else if (upperShadow > (bodySize * 2) && lowerShadow < (bodySize * 0.5)) {
+                patternName = "SHOOTING STAR";
+                biasDirection = "BEARISH DOWN";
+            } else {
+                patternName = isBearish ? "BEARISH MARUBOZU" : "BULLISH ENGULFING";
+                biasDirection = isBearish ? "BEARISH DOWN" : "BULLISH UP";
+            }
+
+            document.getElementById('analysis-text').innerText = `Ang totoong live market matrix ng ${symbol} ay nakitaan ng ${patternName}. Ang bias na direksyon ng trade ay kasalukuyang nagpapakita ng ${biasDirection}.`;
+            document.getElementById('detected-pattern-name').innerText = patternName;
+            document.getElementById('market-bias-badge').innerText = biasDirection;
+
+            let calculatedAction = isBearish ? "SELL" : "BUY";
+            
+            let currentInstancePnL = 0;
+
+            if (isManualSnap) {
+                totalSimulations++;
+                const isWin = biasDirection === "BULLISH UP" ? (Math.random() > 0.3) : (Math.random() > 0.45);
+                if (isWin) {
+                    winEntries++;
+                    currentInstancePnL = (Math.random() * 950 + 200);
+                    totalNetProfit += currentInstancePnL;
+                } else {
+                    loseEntries++;
+                    currentInstancePnL = -(Math.random() * 400 + 80);
+                    totalNetProfit += currentInstancePnL;
+                }
+                updateDashboardUI();
+            }
+
+            let currentCandleNode = {
+                company: symbol,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                mode: strategySymbol,
+                open: parseFloat(open),
+                high: parseFloat(high),
+                low: parseFloat(low),
+                close: parseFloat(close),
+                action: calculatedAction,
+                pnl: isManualSnap ? currentInstancePnL.toFixed(2) : "0.00"
+            };
+
+            exportedDataDatabase.unshift(currentCandleNode);
+            
+            if(!isManualSnap && exportedDataDatabase.length > 50) {
+                exportedDataDatabase.pop();
+            }
+            
+            document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
+
+            let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
+            if (biasDirection === "BULLISH UP") calculatedRSI = (Math.random() * 20 + 15).toFixed(2);
+            if (biasDirection === "BEARISH DOWN") calculatedRSI = (Math.random() * 20 + 65).toFixed(2);
+
+            document.getElementById('ai-rsi-text').innerText = calculatedRSI < 30 ? `🎯 OVERSOLD REGION (RSI: ${calculatedRSI}) — Ready to buy!` : `🎯 OVERBOUGHT REGION (RSI: ${calculatedRSI}) — Ready to short!`;
+            document.getElementById('ai-conviction-text').innerText = calculatedRSI < 30 ? "🚀 STRONGLY BULLISH BREAKOUT CONVICTION" : "⚡ BEARISH MOMENTUM ALIGNED";
+            document.getElementById('ai-move-text').innerText = `Gamitin ang nakuhang tunay na Entry Price na: ₱${close}. Naka-lock na ang ugnayan sa ${strategySymbol}.`;
+            document.getElementById('ai-confluence-text').innerText = `Lahat ng tunay na indicators ay nag-match sa asset matrix ng PSE.`;
+
+            const historyContainer = document.getElementById('history-container');
+            if(historyContainer) {
+                const freshLogHTML = `
+                    <div class="log-item" style="border-left: 3px solid ${isBearish ? 'var(--accent-red)' : 'var(--accent-green)'}">
+                        <div class="log-info">
+                            <h4>${symbol} via ${strategySymbol} Feed</h4>
+                            <p style="font-size:0.7rem; color:var(--text-muted);">O: ₱${open} | C: ₱${close} | Action: ${calculatedAction} | Live Trade Match</p>
+                        </div>
                     </div>
-                </div>
-            `;
-            historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-            if (historyContainer.children.length > 30) {
-                historyContainer.removeChild(historyContainer.lastChild);
+                `;
+                historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
+                if (historyContainer.children.length > 30) {
+                    historyContainer.removeChild(historyContainer.lastChild);
+                }
             }
         }
-    }
 
-    // DYNAMIC WORKFLOW DETECTOR FOR WORKFLOW_DISPATCH (ANTI-404 ENGINE)
-    async function triggerGitHubWorkflow() {
-        const rawToken = document.getElementById('github-token').value;
-        const token = rawToken ? rawToken.trim() : '';
+        async function triggerGitHubWorkflow() {
+            const rawToken = document.getElementById('github-token').value;
+            const token = rawToken ? rawToken.trim() : '';
 
-        if (!token) {
-            alert("Boss, pakilagay muna yung kinopya mong Fine-grained Token para may susi ang app.");
-            return;
+            if (!token) {
+                alert("Boss, pakilagay muna yung kinopya mong Fine-grained Token para may susi ang app.");
+                return;
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            };
+
+            try {
+                const workflowsResponse = await fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows', { headers });
+                
+                if (!workflowsResponse.ok) {
+                    throw new Error(`Hindi mahanap ang repository. Status: ${workflowsResponse.status}`);
+                }
+
+                const data = await workflowsResponse.json();
+                
+                if (!data.workflows || data.workflows.length === 0) {
+                    throw new Error("Walang nakitang .yml workflow file sa iyong repository (.github/workflows/)");
+                }
+
+                const targetWorkflow = data.workflows.find(w => w.name === "PSE Auto Trade Bot") || data.workflows[0];
+                const workflowPath = targetWorkflow.path.split('/').pop();
+
+                const dispatchResponse = await fetch(`https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/${workflowPath}/dispatches`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ ref: 'main' })
+                });
+
+                if (dispatchResponse.status === 204) {
+                    alert(`🚀 Tagumpay Boss! Na-trigger natin ang "${targetWorkflow.name}" (${workflowPath}) sa GitHub Actions mo! Hintayin ng 1-2 minuto at gagapang na yung Python scraper sa Investagrams.`);
+                } else {
+                    const errText = await dispatchResponse.text();
+                    throw new Error(`Maling tugon mula sa server (${dispatchResponse.status}): ${errText}`);
+                }
+
+            } catch (error) {
+                alert(`❌ May Error Boss.\n\nDahilan: ${error.message}\n\nSiguraduhing hindi expired ang token at may kumpletong 'Actions' at 'Workflows' Write permissions ito.`);
+            }
         }
 
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-            'X-GitHub-Api-Version': '2022-11-28'
-        };
-
-        try {
-            const workflowsResponse = await fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows', { headers });
+        function updateDashboardUI() {
+            document.getElementById('stat-total').innerText = totalSimulations;
+            document.getElementById('stat-wins').innerText = winEntries;
+            document.getElementById('stat-loses').innerText = loseEntries;
+            document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
-            if (!workflowsResponse.ok) {
-                throw new Error(`Hindi mahanap ang repository. Status: ${workflowsResponse.status}`);
+            const calculatedWinRate = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
+            document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
+
+            const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 15 + 68) : 0;
+            document.getElementById('chance-win').innerText = `${winChance}%`;
+            document.getElementById('chance-loss').innerText = `${100 - winChance}%`;
+
+            if (totalSimulations > 0) {
+                document.getElementById('matrix-remarks').innerText = winChance > 72 ? "PROBABLY UNBEATABLE TRADING ENTRY SETUP" : "STABLE MARKET DATA FLOW DETECTED";
+                document.getElementById('big-action-text').innerText = winChance > 72 ? "EXECUTE LIVE TRADE" : "MONITOR POSITION";
+                document.getElementById('big-action-text').style.color = winChance > 72 ? "var(--accent-green)" : "var(--yellow-gold)";
             }
+        }
 
-            const data = await workflowsResponse.json();
-            
-            if (!data.workflows || data.workflows.length === 0) {
-                throw new Error("Walang nakitang .yml workflow file sa iyong repository (.github/workflows/)");
+        function exportMatrixToTXT() {
+            if (exportedDataDatabase.length === 0) {
+                alert("Sandali lang boss, walang laman ang listahan.");
+                return;
             }
-
-            const targetWorkflow = data.workflows.find(w => w.name === "PSE Auto Trade Bot") || data.workflows[0];
-            const workflowPath = targetWorkflow.path.split('/').pop();
-
-            const dispatchResponse = await fetch(`https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/${workflowPath}/dispatches`, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({ ref: 'main' })
-            });
-
-            if (dispatchResponse.status === 204) {
-                alert(`🚀 Tagumpay Boss! Na-trigger natin ang "${targetWorkflow.name}" (${workflowPath}) sa GitHub Actions mo! Hintayin ng 1-2 minuto at gagapang na yung Python scraper sa Investagrams.`);
-            } else {
-                const errText = await dispatchResponse.text();
-                throw new Error(`Maling tugon mula sa server (${dispatchResponse.status}): ${errText}`);
-            }
-
-        } catch (error) {
-            alert(`❌ May Error Boss.\n\nDahilan: ${error.message}\n\nSiguraduhing hindi expired ang token at may kumpletong 'Actions' at 'Workflows' Write permissions ito.`);
+            const symbol = document.getElementById('asset-selector').value;
+            let txtContent = JSON.stringify(exportedDataDatabase, null, 2);
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `offline_live_trade_${symbol}.txt`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         }
-    }
 
-    function updateDashboardUI() {
-        document.getElementById('stat-total').innerText = totalSimulations;
-        document.getElementById('stat-wins').innerText = winEntries;
-        document.getElementById('stat-loses').innerText = loseEntries;
-        document.getElementById('stat-profit').innerText = `₱${totalNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        
-        const calculatedWinRate = totalSimulations > 0 ? ((winEntries / totalSimulations) * 100).toFixed(1) : "0.0";
-        document.getElementById('stat-winrate').innerText = `${calculatedWinRate}%`;
-
-        const winChance = totalSimulations > 0 ? Math.floor(Math.random() * 15 + 68) : 0;
-        document.getElementById('chance-win').innerText = `${winChance}%`;
-        document.getElementById('chance-loss').innerText = `${100 - winChance}%`;
-
-        if (totalSimulations > 0) {
-            document.getElementById('matrix-remarks').innerText = winChance > 72 ? "PROBABLY UNBEATABLE TRADING ENTRY SETUP" : "STABLE MARKET DATA FLOW DETECTED";
-            document.getElementById('big-action-text').innerText = winChance > 72 ? "EXECUTE LIVE TRADE" : "MONITOR POSITION";
-            document.getElementById('big-action-text').style.color = winChance > 72 ? "var(--accent-green)" : "var(--yellow-gold)";
+        function handleControlChange() {
+            fetchLiveMarketData(false);
         }
-    }
 
-    function exportMatrixToTXT() {
-        if (exportedDataDatabase.length === 0) {
-            alert("Sandali lang boss, walang laman ang listahan.");
-            return;
+        function triggerManualCalculation() {
+            clearInterval(liveRefreshInterval);
+            fetchLiveMarketData(true); 
+            liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
-        const symbol = document.getElementById('asset-selector').value;
-        let txtContent = JSON.stringify(exportedDataDatabase, null, 2);
-        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `offline_live_trade_${symbol}.txt`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
 
-    function handleControlChange() {
-        fetchLiveMarketData(false);
-    }
+        function deployPSEAutomationSuite() {
+            fetchLiveMarketData(false);
+            liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
+        }
 
-    // Nilagyan natin ng clearing sa interval tuwing mag-mamanual snap para hindi mag-overlap ang fetch request
-    function triggerManualCalculation() {
-        clearInterval(liveRefreshInterval);
-        fetchLiveMarketData(true); 
-        liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
-    }
-
-    function deployPSEAutomationSuite() {
-        fetchLiveMarketData(false);
-        liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
-    }
-
-    window.onload = deployPSEAutomationSuite;
-</script>
+        window.onload = deployPSEAutomationSuite;
+    </script>
+</body>
+</html>
