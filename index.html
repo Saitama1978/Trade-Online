@@ -445,7 +445,6 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // TOTOONG FETCH RESTRUCTURE PARA SA LIVE DATA
         async function fetchLiveMarketData(isManualSnap = false) {
             const symbol = document.getElementById('asset-selector').value;
             const strategySymbol = document.getElementById('strategy-mode').value;
@@ -453,7 +452,6 @@
             document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
             document.getElementById('analysis-ticker').innerText = symbol;
 
-            // Mas pinalakas na real-time fallback algorithms para sa totoong datus ng PSE
             const basePrices = { "MER":590,"BDO":155,"BPI":121,"MBT":68,"SM":942,"AC":685,"SMPH":32.4,"JFC":258,"ICT":350,"ALI":29,"GLO":1720,"TEL":1340,"URC":96,"AEV":36,"AGI":9.8,"DMCI":11.3,"MONDE":10.1,"CNVRG":15.4,"SCC":31.8,"PGOLD":32.1 };
             const basePrice = basePrices[symbol] || 100;
             const drift = (Math.random() - 0.49) * (basePrice * 0.003);
@@ -558,31 +556,34 @@
             }
         }
 
-        // MAHIWAGANG FUNCTION: MAGTITRIGGER NG BOT SA GITHUB ACTIONS MO
+        // MAHIWAGANG FUNCTION: NAGTITRIGGER NG BOT SA GITHUB ACTIONS MO (MUTADO AT DIRETSO)
         function triggerGitHubWorkflow() {
-            const token = document.getElementById('github-token').value;
+            const rawToken = document.getElementById('github-token').value;
+            const token = rawToken ? rawToken.trim() : '';
+
             if (!token) {
                 alert("Boss, pakilagay muna yung kinopya mong Fine-grained Token para may susi ang app.");
                 return;
             }
 
-            // Awtomatikong pinapagana ang iyong run_bot.yml workflow remote control
             fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/run_bot.yml/dispatches', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-GitHub-Api-Version': '2022-11-28' 
                 },
                 body: JSON.stringify({
-                    ref: 'main' // Patakbuhin gamit ang main branch mo
+                    ref: 'main' 
                 })
             })
-            .then(response => {
+            .then(async response => {
                 if (response.status === 204) {
                     alert("🚀 Tagumpay Boss! Na-trigger na natin ang Python Scraper sa GitHub Actions mo! Hintayin ng 1-2 minuto at maglo-log in na yung bot sa Investagrams para mag-trade.");
                 } else {
-                    alert("❌ May Error Boss. Siguraduhing tama ang token mo at may Read/Write permission sa Actions.");
+                    const errData = await response.json().catch(() => ({ message: "Unknown error occurred" }));
+                    alert(`❌ May Error Boss (Status: ${response.status}). \n\nDahilan: ${errData.message}\n\nSiguraduhing tama ang token mo, hindi ito expired, at may tamang Read/Write at Workflow permissions ang token sa Actions settings.`);
                 }
             })
             .catch(err => {
