@@ -87,13 +87,6 @@
             display: inline-block;
             margin-right: 6px;
             box-shadow: 0 0 8px var(--accent-green);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0 { transform: scale(0.9); opacity: 0.6; }
-            50 { transform: scale(1.2); opacity: 1; }
-            100 { transform: scale(0.9); opacity: 0.6; }
         }
 
         .tabs-container {
@@ -175,16 +168,16 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
-        /* BUTTON TOUCH FEEDBACK UPGRADE */
+        /* UPGRADED MOBILE BUTTON INTERACTION LOGIC */
         .btn-action {
             width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; 
-            transition: transform 0.1s ease, filter 0.1s ease, opacity 0.2s;
+            transition: transform 0.05s ease-in-out, filter 0.05s ease-in-out;
         }
         .btn-action:active {
-            transform: scale(0.96);
-            filter: brightness(0.8);
+            transform: scale(0.93) !important;
+            filter: brightness(0.7) !important;
         }
-        .btn-green { background-color: var(--accent-green); color: #000; }
+        .btn-green { background-color: var(--accent-green); color: #000; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
         .btn-blue { background-color: var(--accent-blue); color: #fff; margin-top: 15px; }
         .btn-purple { background-color: var(--accent-purple); color: #000; margin-top: 15px; }
 
@@ -427,7 +420,6 @@
     <footer>Developed by: Renante Fullo</footer>
 
     <script>
-        let liveRefreshInterval = null;
         let exportedDataDatabase = []; 
 
         let totalSimulations = 0;
@@ -475,7 +467,6 @@
             document.getElementById('inp-low').value = low;
             document.getElementById('inp-close').value = close;
 
-            // FIXED SYNC BUG: Dynamic updating for header stock label & calculated price
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
@@ -657,19 +648,17 @@
             downloadAnchor.remove();
         }
 
+        // FIXED LOGIC: Tinanggal ang background auto-refresh loops para hindi ma-override ang piniling dropdown asset.
         function handleControlChange() {
             fetchLiveMarketData(false);
         }
 
         function triggerManualCalculation() {
-            clearInterval(liveRefreshInterval);
             fetchLiveMarketData(true); 
-            liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
         function deployPSEAutomationSuite() {
             fetchLiveMarketData(false);
-            liveRefreshInterval = setInterval(() => fetchLiveMarketData(false), 4000);
         }
 
         window.onload = deployPSEAutomationSuite;
