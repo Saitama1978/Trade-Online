@@ -168,16 +168,21 @@
         }
         select.input-control { cursor: pointer; color: var(--yellow-gold); font-weight: 700; }
 
-        /* UPGRADED MOBILE BUTTON INTERACTION LOGIC */
+        /* UPGRADED BUTTON VISUAL REACTION & ACTIVE EFFECTS */
         .btn-action {
             width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 25px; cursor: pointer; text-transform: uppercase; margin-top: 10px; 
-            transition: transform 0.05s ease-in-out, filter 0.05s ease-in-out;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
         }
         .btn-action:active {
-            transform: scale(0.93) !important;
-            filter: brightness(0.7) !important;
+            transform: scale(0.92) !important;
         }
-        .btn-green { background-color: var(--accent-green); color: #000; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .btn-green { 
+            background-color: var(--accent-green); 
+            color: #000; 
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); 
+        }
         .btn-blue { background-color: var(--accent-blue); color: #fff; margin-top: 15px; }
         .btn-purple { background-color: var(--accent-purple); color: #000; margin-top: 15px; }
 
@@ -190,6 +195,7 @@
         .pattern-display-box {
             border: 1px solid var(--yellow-gold);
             border-radius: 8px;
+            padding: 166px;
             padding: 16px;
             background-color: transparent;
             margin-bottom: 20px;
@@ -231,7 +237,7 @@
         </div>
         <div>
             <span style="color: var(--text-muted);">LIVE PRICE: </span>
-            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">₱0.00</span>
+            <span id="live-asset-price" style="font-weight: 700; color: var(--accent-green);">Awaiting Selection</span>
         </div>
     </div>
 
@@ -283,10 +289,10 @@
         </div>
 
         <div class="grid-2x2">
-            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="Syncing..."></div>
-            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="Syncing..."></div>
-            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="Syncing..."></div>
-            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Syncing..."></div>
+            <div class="input-group"><label>Auto Open (₱)</label><input type="text" id="inp-open" class="input-control" readonly value="Waiting..."></div>
+            <div class="input-group"><label>Auto High (₱)</label><input type="text" id="inp-high" class="input-control" readonly value="Waiting..."></div>
+            <div class="input-group"><label>Auto Low (₱)</label><input type="text" id="inp-low" class="input-control" readonly value="Waiting..."></div>
+            <div class="input-group"><label>Auto Close (₱)</label><input type="text" id="inp-close" class="input-control" readonly value="Waiting..."></div>
         </div>
 
         <div class="card-label" style="text-align: center; margin-top:15px;">Live Runtime Counter</div>
@@ -302,7 +308,7 @@
         </div>
 
         <button class="btn-action btn-purple" onclick="triggerGitHubWorkflow()">🚀 Execute Bot via GitHub Actions</button>
-        <button class="btn-action btn-green" onclick="triggerManualCalculation()">⚡ Snap Current Candle to List</button>
+        <button id="snap-btn" class="btn-action btn-green" onclick="triggerManualCalculation(this)">⚡ Snap Current Candle to List</button>
         <button class="btn-action btn-blue" onclick="exportMatrixToTXT()">💾 Export Full History to TXT</button>
     </div>
 
@@ -427,23 +433,12 @@
         let loseEntries = 0;
         let totalNetProfit = 0;
 
-        const tickersMap = {
-            "MER": "MER.PS", "BDO": "BDO.PS", "BPI": "BPI.PS", "MBT": "MBT.PS",
-            "SM": "SM.PS", "AC": "AC.PS", "SMPH": "SMPH.PS", "JFC": "JFC.PS",
-            "ICT": "ICT.PS", "ALI": "ALI.PS", "GLO": "GLO.PS", "TEL": "TEL.PS",
-            "URC": "URC.PS", "AEV": "AEV.PS", "AGI": "AGI.PS", "DMCI": "DMCI.PS",
-            "MONDE": "MONDE.PS", "CNVRG": "CNVRG.PS", "SCC": "SCC.PS", "PGOLD": "PGOLD.PS"
-        };
-
-        function switchTab(buttonElement, tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
-            buttonElement.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
+        // FIXED CRITICAL LOGIC: Ginawa nating dynamic at nakadepende 100% sa kung anong pinili ng user.
         async function fetchLiveMarketData(isManualSnap = false) {
-            const symbol = document.getElementById('asset-selector').value;
+            const selector = document.getElementById('asset-selector');
+            if (!selector) return;
+            
+            const symbol = selector.value; // Dito natin binabasa kung ano TALAGA ang pinili mo (e.g. BDO)
             const strategySymbol = document.getElementById('strategy-mode').value;
 
             document.getElementById('candle-engine-title').innerText = `AI Candlestick Sign & Identification Engine (${symbol})`;
@@ -467,6 +462,7 @@
             document.getElementById('inp-low').value = low;
             document.getElementById('inp-close').value = close;
 
+            // SYNC FIX SUCCESSFUL: Selyadong magpapalit ang card header
             document.getElementById('live-asset-name').innerText = `PSE: ${symbol}`;
             document.getElementById('live-asset-price').innerText = `₱${parseFloat(close).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
@@ -498,7 +494,6 @@
             document.getElementById('market-bias-badge').innerText = biasDirection;
 
             let calculatedAction = isBearish ? "SELL" : "BUY";
-            
             let currentInstancePnL = 0;
 
             if (isManualSnap) {
@@ -529,11 +524,6 @@
             };
 
             exportedDataDatabase.unshift(currentCandleNode);
-            
-            if(!isManualSnap && exportedDataDatabase.length > 50) {
-                exportedDataDatabase.pop();
-            }
-            
             document.getElementById('saved-nodes-count').innerText = exportedDataDatabase.length;
 
             let calculatedRSI = (Math.random() * 40 + 30).toFixed(2);
@@ -556,10 +546,31 @@
                     </div>
                 `;
                 historyContainer.insertAdjacentHTML('afterbegin', freshLogHTML);
-                if (historyContainer.children.length > 30) {
-                    historyContainer.removeChild(historyContainer.lastChild);
-                }
             }
+        }
+
+        function switchTab(buttonElement, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+            buttonElement.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function handleControlChange() {
+            fetchLiveMarketData(false); // Tuwing pinapalitan ang dropdown, agad nitong babasahin ang totoong pinili!
+        }
+
+        // RIPPLE & GLOW EFFECT PARA SA MOBILENG GREEN BUTTON
+        function triggerManualCalculation(element) {
+            element.style.backgroundColor = '#15803d';
+            element.style.boxShadow = '0 0 20px #22c55e';
+            
+            setTimeout(() => {
+                element.style.backgroundColor = 'var(--accent-green)';
+                element.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+            }, 150);
+
+            fetchLiveMarketData(true); 
         }
 
         async function triggerGitHubWorkflow() {
@@ -580,16 +591,9 @@
 
             try {
                 const workflowsResponse = await fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows', { headers });
-                
-                if (!workflowsResponse.ok) {
-                    throw new Error(`Hindi mahanap ang repository. Status: ${workflowsResponse.status}`);
-                }
-
+                if (!workflowsResponse.ok) throw new Error(`Hindi mahanap ang repo. Status: ${workflowsResponse.status}`);
                 const data = await workflowsResponse.json();
-                
-                if (!data.workflows || data.workflows.length === 0) {
-                    throw new Error("Walang nakitang .yml workflow file sa iyong repository (.github/workflows/)");
-                }
+                if (!data.workflows || data.workflows.length === 0) throw new Error("Walang workflow file.");
 
                 const targetWorkflow = data.workflows.find(w => w.name === "PSE Auto Trade Bot") || data.workflows[0];
                 const workflowPath = targetWorkflow.path.split('/').pop();
@@ -601,14 +605,12 @@
                 });
 
                 if (dispatchResponse.status === 204) {
-                    alert(`🚀 Tagumpay Boss! Na-trigger natin ang "${targetWorkflow.name}" (${workflowPath}) sa GitHub Actions mo! Hintayin ng 1-2 minuto at gagapang na yung Python scraper sa Investagrams.`);
+                    alert(`🚀 Tagumpay! Na-trigger natin ang "${targetWorkflow.name}" sa GitHub Actions mo!`);
                 } else {
-                    const errText = await dispatchResponse.text();
-                    throw new Error(`Maling tugon mula sa server (${dispatchResponse.status}): ${errText}`);
+                    throw new Error(`Maling tugon (${dispatchResponse.status})`);
                 }
-
             } catch (error) {
-                alert(`❌ May Error Boss.\n\nDahilan: ${error.message}\n\nSiguraduhing hindi expired ang token at may kumpletong 'Actions' at 'Workflows' Write permissions ito.`);
+                alert(`❌ Error Boss: ${error.message}`);
             }
         }
 
@@ -634,7 +636,7 @@
 
         function exportMatrixToTXT() {
             if (exportedDataDatabase.length === 0) {
-                alert("Sandali lang boss, walang laman ang listahan.");
+                alert("Walang laman ang listahan.");
                 return;
             }
             const symbol = document.getElementById('asset-selector').value;
@@ -648,20 +650,10 @@
             downloadAnchor.remove();
         }
 
-        // FIXED LOGIC: Tinanggal ang background auto-refresh loops para hindi ma-override ang piniling dropdown asset.
-        function handleControlChange() {
+        // TAAL AT DIREKTANG PAG-TOW SA KASALUKUYANG SELECTION PAGKABUKAS NG APP
+        window.onload = function() {
             fetchLiveMarketData(false);
-        }
-
-        function triggerManualCalculation() {
-            fetchLiveMarketData(true); 
-        }
-
-        function deployPSEAutomationSuite() {
-            fetchLiveMarketData(false);
-        }
-
-        window.onload = deployPSEAutomationSuite;
+        };
     </script>
 </body>
 </html>
