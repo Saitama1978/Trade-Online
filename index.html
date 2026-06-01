@@ -92,8 +92,8 @@
 
         @keyframes pulse {
             0 { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
+            50 { transform: scale(1.2); opacity: 1; }
+            100 { transform: scale(0.9); opacity: 0.6; }
         }
 
         .tabs-container {
@@ -297,7 +297,6 @@
             </div>
         </div>
 
-        <!-- GITHUB REMOTE CONTROL INTERFACE -->
         <div class="input-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
             <label style="color: var(--accent-purple);">GitHub Personal Access Token</label>
             <input type="password" id="github-token" class="input-control" placeholder="I-paste ang github_pat_ dito..." style="border-color: var(--accent-purple);">
@@ -556,8 +555,8 @@
             }
         }
 
-        // MAHIWAGANG FUNCTION: NAGTITRIGGER NG BOT SA GITHUB ACTIONS MO (MUTADO AT DIRETSO)
-        function triggerGitHubWorkflow() {
+        // DYNAMIC WORKFLOW DETECTOR FOR WORKFLOW_DISPATCH (ANTI-404 ENGINE)
+        async function triggerGitHubWorkflow() {
             const rawToken = document.getElementById('github-token').value;
             const token = rawToken ? rawToken.trim() : '';
 
@@ -566,29 +565,48 @@
                 return;
             }
 
-            fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/run_bot.yml/dispatches', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json',
-                    'X-GitHub-Api-Version': '2022-11-28' 
-                },
-                body: JSON.stringify({
-                    ref: 'main' 
-                })
-            })
-            .then(async response => {
-                if (response.status === 204) {
-                    alert("🚀 Tagumpay Boss! Na-trigger na natin ang Python Scraper sa GitHub Actions mo! Hintayin ng 1-2 minuto at maglo-log in na yung bot sa Investagrams para mag-trade.");
-                } else {
-                    const errData = await response.json().catch(() => ({ message: "Unknown error occurred" }));
-                    alert(`❌ May Error Boss (Status: ${response.status}). \n\nDahilan: ${errData.message}\n\nSiguraduhing tama ang token mo, hindi ito expired, at may tamang Read/Write at Workflow permissions ang token sa Actions settings.`);
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            };
+
+            try {
+                // Hakbang 1: Awtomatikong basahin ang listahan ng mga workflows para makuha ang totoong file name
+                const workflowsResponse = await fetch('https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows', { headers });
+                
+                if (!workflowsResponse.ok) {
+                    throw new Error(`Hindi mahanap ang repository. Status: ${workflowsResponse.status}`);
                 }
-            })
-            .catch(err => {
-                alert("❌ Hindi makakonekta sa GitHub API: " + err);
-            });
+
+                const data = await workflowsResponse.json();
+                
+                if (!data.workflows || data.workflows.length === 0) {
+                    throw new Error("Walang nakitang .yml workflow file sa iyong repository (.github/workflows/)");
+                }
+
+                // Hanapin ang workflow file na may pangalang "PSE Auto Trade Bot"
+                const targetWorkflow = data.workflows.find(w => w.name === "PSE Auto Trade Bot") || data.workflows[0];
+                const workflowPath = targetWorkflow.path.split('/').pop(); // Kukunin ang eksaktong file name (e.g., main.yml)
+
+                // Hakbang 2: Patakbuhin ang nakitang workflow gamit ang tamang workflow_dispatch trigger
+                const dispatchResponse = await fetch(`https://api.github.com/repos/saitama1978/Trade-Online/actions/workflows/${workflowPath}/dispatches`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ ref: 'main' })
+                });
+
+                if (dispatchResponse.status === 204) {
+                    alert(`🚀 Tagumpay Boss! Na-trigger natin ang "${targetWorkflow.name}" (${workflowPath}) sa GitHub Actions mo! Hintayin ng 1-2 minuto at gagapang na yung Python scraper sa Investagrams.`);
+                } else {
+                    const errText = await dispatchResponse.text();
+                    throw new Error(`Maling tugon mula sa server (${dispatchResponse.status}): ${errText}`);
+                }
+
+            } catch (error) {
+                alert(`❌ May Error Boss.\n\nDahilan: ${error.message}\n\nSiguraduhing hindi expired ang token at may kumpletong 'Actions' at 'Workflows' Write permissions ito.`);
+            }
         }
 
         function updateDashboardUI() {
